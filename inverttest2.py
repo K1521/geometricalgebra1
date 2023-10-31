@@ -149,3 +149,5 @@ def rightShift(text,n):
 #print(leftShift(sxor(basi1str,s),0)[1:])
 #print(bin(2**bas1.bit_length()+bas1-1)[:1:-1])
 #print(bin(bas1^(bas1<<1))[:1:-1])
+
+

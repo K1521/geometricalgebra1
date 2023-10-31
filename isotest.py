@@ -1,18 +1,19 @@
-import plotly.graph_objects as go
-import numpy as np
+from numpy import cos, pi, mgrid
+import pyvista as pv
+pv.set_plot_theme('dark')
 
-X, Y, Z = np.mgrid[-5:5:40j, -5:5:40j, -5:5:40j]
+#%% Data
+x, y, z = pi*mgrid[-1:1:31j, -1:1:31j, -1:1:31j]
+vol = cos(x) + cos(y) + cos(z)
+grid = pv.StructuredGrid(x, y, z)
+grid["vol"] = vol.flatten()
+contours = grid.contour([0])
+#grid.plot()
+#%% Visualization
 
-# ellipsoid
-values = X * X * 0.5 + Y * Y + Z * Z * 2
 
-fig = go.Figure(data=go.Isosurface(
-    x=X.flatten(),
-    y=Y.flatten(),
-    z=Z.flatten(),
-    value=values.flatten(),
-    isomin=10,
-    isomax=40,
-    caps=dict(x_show=False, y_show=False)
-    ))
-fig.show()
+p = pv.Plotter()
+p.add_axes()
+p.add_mesh(contours, scalars=contours.points[:, 2], show_scalar_bar=False)
+p.show_grid()
+p.show()
