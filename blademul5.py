@@ -8,6 +8,8 @@ class blade:
     def __neg__(self):
         return blade(self.basis,-self.magnitude)
     def __mul__(self,x):
+        #TODO no computation if magnitude is 1
+        #if self.magnitude
         return blade(self.basis,self.magnitude*x)
 
 class algebra:
@@ -62,6 +64,7 @@ class algebra:
         #calculate negative alligned "inversions"
         invert^=(self.negamask&blade1.basis&blade2.basis).bit_count()&1
 
+        #calculate magnitude
         magnitude=blade1.magnitude*blade2.magnitude
         if invert:
             magnitude=-magnitude
@@ -242,7 +245,82 @@ class dictgeo:
     def toscalar(self):
         return self.d.get(0,0)
         #todo raise Exception("not convertible")
+
+
+
+class sortgeotf:
+    #@staticmethod
+    #def filterzero(it):
+    #    return list(i for i in it if i.magnitude!=0)
+
+    def __init__(self,algebra,lst=None,compress=False) -> None:
+        self.algebra=algebra
+        self.lst=[i for i in lst if i!=self.algebra.zero]
+        if compress:
+            self.compress()
+    def allblades(self,sort=True):
+        lst=[sortgeotf(self.algebra,[blade(i)]) for i in range(2**self.algebra.dim)]
+        if sort:
+            return sorted(lst,key=lambda x:self.algebra.bladesortkey(x.lst[0]))
+        return lst
+    def monoblades(self):
+        return [sortgeotf(self.algebra,[blade(1<<i)])for i in range(self.algebra.dim)]
+
+    def __str__(self) -> str:
+        if not self.lst:
+            return self.algebra.bladestr(self.algebra.zero)
+        return "".join(self.algebra.bladestr(b) for b in sorted(self.lst,key=self.algebra.bladesortkey))
+    
+    def __repr__(self):
+        return self.__str__()
+
+    def compress(self):
         
+        lstnew=[]
+        getblades=lambda x:x.basis
+        self.lst.sort(key=getblades)
+        for k,g in itertools.groupby((i for i in self.lst if self.algebra.zero!=0),key=getblades):
+            g=list(g)
+            if len(g)==1:
+                lstnew.append(g[0])
+            else:
+                lstnew.append(blade(k,sum(x.magnitude for x in g)))
+        self.lst=lstnew
+        #actblades=lst[0].blades
+        #actmagnitude=lst[0].blades#i have desided to make blades imutable
+        #for i in range(1,len(lst)):
+        #    if lst[i].blades==lst[ilast].blades:
+    def __matmul__(self,othe): 
+        return sortgeotf(self.algebra,(self.algebra.geo(x,y) for x in self.lst for y in othe.lst),compress=True)
+    def inner(self,othe):
+        return sortgeotf(self.algebra,(self.algebra.inner(x,y) for x in self.lst for y in othe.lst),compress=True)
+    def __xor__(self,othe):
+        return self.outer(othe)
+    def outer(self,othe):
+        return sortgeotf(self.algebra,(self.algebra.outer(x,y) for x in self.lst for y in othe.lst),compress=True)
+    def __add__(self,othe):
+        return sortgeotf(self.algebra,self.lst+othe.lst,compress=True)
+    def __sub__(self,othe):
+        return self+ (-othe)
+    def __neg__(self):
+        return sortgeotf(self.algebra,(-i for i in self.lst),compress=False)
+    def __mul__(self,x):
+        return sortgeotf(self.algebra,(i*x for i in self.lst),compress=False)
+    def __rmul__(self,x):
+        return self*x
+    def toscalar(self):
+        if not self.lst:
+            return 0
+        if len(self.lst)==1:
+            if self.lst[0].basis==0:
+                return self.lst[0].magnitude
+        self.compress()
+        if not self.lst:
+            return 0
+        if len(self.lst)==1:
+            if self.lst[0].basis==0:
+                return self.lst[0].magnitude
+        raise Exception("not convertible")
 #e1=blade(1<<0)
 #e2=blade(1<<1)
 #e3=blade(1<<2)
