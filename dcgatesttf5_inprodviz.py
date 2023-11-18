@@ -113,7 +113,7 @@ else:
         #vol*=(-1)**(arr[np.abs(arr).argmax(axis=0),range(arr.shape[1])]>1)
         #vol=(tape.gradient(vol, xtf).numpy()**2+ tape.gradient(vol, y).numpy()**2+tape.gradient(vol, z).numpy()**2)-0.1
         #vol=vol-0.1
-        delta=np.stack([tape.gradient(voltf, xtf).numpy(),tape.gradient(voltf, ytf).numpy(),tape.gradient(voltf, ztf).numpy()],axis=3)
+        delta=np.stack([tape.gradient(voltf, ztf).numpy(),tape.gradient(voltf, ytf).numpy(),tape.gradient(voltf, xtf).numpy()],axis=3)
         del tape
         #from sklearn.preprocessing import normalize
         def normalized(a, axis=-1, order=2):
