@@ -11,6 +11,8 @@ class blade:
         #TODO no computation if magnitude is 1
         #if self.magnitude
         return blade(self.basis,self.magnitude*x)
+    def __repr__(self):
+        return f"blade({self.basis:b},{self.magnitude})"
 
 class algebra:
     def __init__(self,posi=3,nega=0,neut=0,order="pnz"):
@@ -39,12 +41,14 @@ class algebra:
     def basedecode(self,basis):
         return tuple(i for i,x in enumerate(bin(basis)[:1:-1],0)if x=="1")
     def bladestr(self,blade:blade):
-        if self.bladenames==0:
-            return "+0"
+        try:
+            mag=f"{blade.magnitude:+}"
+        except TypeError:
+            mag=f"{blade.magnitude}"
         if blade.basis==0:
-            return f"{blade.magnitude:+}"
+            return mag
         trenner="," if max(map(len,self.bladenames))>1 else ""
-        return f"{blade.magnitude:+}*e"+trenner.join(self.bladenames[i] for i in self.basedecode(blade.basis))
+        return  mag+"*e"+trenner.join(self.bladenames[i] for i in self.basedecode(blade.basis))
     
     def geo(self,blade1:blade,blade2:blade):
         #if both have alligning neutral vector return 0
@@ -254,6 +258,8 @@ class sortgeotf:
     #    return list(i for i in it if i.magnitude!=0)
 
     def __init__(self,algebra,lst=None,compress=False) -> None:
+        if lst is None:
+            lst=[]
         self.algebra=algebra
         self.lst=[i for i in lst if i!=self.algebra.zero]
         if compress:
@@ -265,6 +271,12 @@ class sortgeotf:
         return lst
     def monoblades(self):
         return [sortgeotf(self.algebra,[blade(1<<i)])for i in range(self.algebra.dim)]
+    def skalar(self,num):#makes a skalar from float/list of float
+        try:
+            return[sortgeotf(self.algebra,[blade(0,x)]) for x in num]
+        except TypeError:
+            return sortgeotf(self.algebra,[blade(0,num)])
+        
 
     def __str__(self) -> str:
         if not self.lst:
@@ -284,6 +296,8 @@ class sortgeotf:
             if len(g)==1:
                 lstnew.append(g[0])
             else:
+                print(type(g[0].magnitude))
+                print(g[0].magnitude+0)
                 lstnew.append(blade(k,sum(x.magnitude for x in g)))
         self.lst=lstnew
         #actblades=lst[0].blades

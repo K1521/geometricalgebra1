@@ -1,6 +1,6 @@
 
 import tensorflow as tf
-from blademul5 import *
+from blademul6 import *
 import numpy as np
 import pyvista as pv
 import time
@@ -12,7 +12,7 @@ dcga=algebra(8,2)
 #multivec=sortgeo(dcga)
 
 #algebra declaration
-multivec=sortgeotf(dcga,[])
+multivec=sortgeo(dcga,[])
 e1,e2,e3,e4,e6,e7,e8,e9,e5,e10=multivec.monoblades()
 
 dcga.bladenames="1,2,3,4,6,7,8,9,5,10".split(",")
@@ -70,7 +70,7 @@ p=Plane(.1,0,0,.1)
 
 
 
-vis=p
+vis=t^p
 #pyvista setup
 pv.set_plot_theme('dark')
 p = pv.Plotter()

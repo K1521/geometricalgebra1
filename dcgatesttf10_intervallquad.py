@@ -71,7 +71,7 @@ p=Plane(.1,0,0,.1)
 
 
 
-vis=p.inner(t)
+vis=p^t
 #pyvista setup
 pv.set_plot_theme('dark')
 p = pv.Plotter()
@@ -96,6 +96,8 @@ class intervallareth:
         if isinstance(other,intervallareth):
             combis=[self.min*other.min,self.min*other.max,self.max*other.min,self.max*other.max]
             return intervallareth(np.min(combis, axis=0),np.max(combis, axis=0))
+        if other==0:return 0
+        if other==1:return self
         if other>0:
             return intervallareth(self.min*other,self.max*other)
         else:
@@ -106,6 +108,7 @@ class intervallareth:
     def __add__(self,other):
         if isinstance(other,intervallareth):
             return intervallareth(self.min+other.min,self.max+other.max)
+        if other==0:return self
         return intervallareth(self.min+other,self.max+other)
     def __radd__(self,other):
         return self+other
@@ -113,6 +116,7 @@ class intervallareth:
     def __sub__(self,other):
         if isinstance(other,intervallareth):
             return intervallareth(self.min-other.max,self.max-other.min)
+        if other==0:return self
         return intervallareth(self.min-other,self.max-other)
     def __rsub__(self,other):
         return intervallareth(other-self.max,other-self.min)
@@ -122,8 +126,8 @@ class intervallareth:
     def mid(self):
         #return (self.min+self.max)/2
         return np.average([self.min,self.max], axis=0)
-    def haszerro(self,maxdelta=0):
-        return (self.min<=maxdelta)&(self.max>=-maxdelta)
+    def containsnum(self,num=0,maxdelta=0):
+        return (self.min<=num+maxdelta)&(self.max>=num-maxdelta)
     def __abs__(self):
         combis=[abs(self.min),abs(self.max)]
         return intervallareth(np.where((self.min<=0)&(0<=self.max), 0, np.min(combis, axis=0)),np.max(combis, axis=0))
@@ -133,7 +137,7 @@ class intervallareth:
             raise ValueError("Power must be non-negative")
         elif exponent == 0:
             #return 1
-            return intervallareth(1)
+            return intervallareth(1,1)
         
         
         if exponent % 2 == 0:
@@ -151,7 +155,7 @@ t0=time.time()
 lowerbound=-64
 upperbound=64
 depth=16
-maxvoxelnum=1000000
+maxvoxelnum=100000
 
 intervallx,intervally,intervallz=[intervallareth(np.array([lowerbound]),np.array([upperbound])) for _ in range(3)]
 
@@ -189,7 +193,7 @@ for j in range(1,depth+1):
     #print(np.stack([intervallx.min,intervallx.max,intervally.min,intervally.max,intervallz.min,intervallz.max]).T)
     #delete cells without 0
     voxelsintervall=point(intervallx,intervally,intervallz).inner(vis)#calculate 
-    voxelswithzerro=np.all([blade.magnitude.haszerro() for blade in voxelsintervall.lst],axis=0)
+    voxelswithzerro=np.all([blade.magnitude.containsnum() for blade in voxelsintervall.lst],axis=0)
     intervallx,intervally,intervallz=[intervallareth(intervall.min[voxelswithzerro],intervall.max[voxelswithzerro]) for intervall in (intervallx,intervally,intervallz)]
     print(len(voxelswithzerro))
     if len(voxelswithzerro)>maxvoxelnum:
@@ -304,7 +308,7 @@ grid.SetCells(vtk.VTK_VOXEL, cells)
 
 
 print(time.time()-t0)
-
+#grid = pv.UnstructuredGrid(cells_mat.ravel(), np.array([pv.CellType.VOXEL]*len(cells_mat), np.int8), all_nodes.ravel())
 p.add_mesh(grid,opacity=0.5)
 p.show()
             
