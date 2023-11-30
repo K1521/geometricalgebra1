@@ -142,7 +142,7 @@ while running:
     #time.sleep(1/10)
     line.points[1]=eucpoint(rotate(M,PS[0]))
     p.update()
-    print(p.camera_position)
+    #print(p.camera_position)
 
     #p.update_coordinates(np.array([eucpoint(rotate(M,p)) for p in PS]), render=False)
     #print([rotate(M,p) for p in PS])

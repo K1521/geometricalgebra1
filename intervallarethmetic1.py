@@ -4,6 +4,9 @@ class intervallareth:
     def __init__(self,min,max) -> None:
         self.min=min
         self.max=max
+    
+    def __str__(self):
+        return f"[{self.min},{self.max}]"
 
     def __mul__(self,other):
         #todo optimise case if self==other
