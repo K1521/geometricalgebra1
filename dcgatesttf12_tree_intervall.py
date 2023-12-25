@@ -82,7 +82,7 @@ p=Plane(0.1,0.1,0.1,0.5)
 
 
 
-vis=t^Plane(0.1,0.1,0.001,0.5)^Plane(0.001,0.001,0.1,0.1)
+vis=t#^Plane(0.1,0.1,0.001,0.5)^Plane(0.001,0.001,0.1,0.1)
 #pyvista setup
 pv.set_plot_theme('dark')
 p = pv.Plotter()
