@@ -1,4 +1,4 @@
-from algebra.dcga import *
+from dcgasym1 import *
 import pyvista as pv
 import time
 import functools

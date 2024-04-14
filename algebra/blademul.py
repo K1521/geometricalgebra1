@@ -38,7 +38,7 @@ class algebra:
         try:
             mag=f"{blade.magnitude:+}"
         except TypeError:
-            mag=f"{blade.magnitude}"
+            mag=f"+{blade.magnitude}"
         if blade.basis==0:
             return mag
         trenner="," if max(map(len,self.bladenames))>1 else ""
@@ -50,14 +50,20 @@ class algebra:
             return self.zero
         
         #count inversions
-        bas1acc=blade1.basis^(blade1.basis.bit_count()&1)
-        i=1
-        l=min(blade1.basis.bit_length(),blade2.basis.bit_length())
-        mask=(2<<l)-1
-        while i<=l:
-            bas1acc^=(bas1acc<<i)&mask
-            i<<=1
+        #bas1acc=blade1.basis^(blade1.basis.bit_count()&1)
+        #i=1
+        #l=min(blade1.basis.bit_length(),blade2.basis.bit_length())
+        #mask=(2<<l)-1
+        #while i<=l:
+        #    bas1acc^=(bas1acc<<i)&mask
+        #    i<<=1
+        #invert=(bas1acc&blade2.basis).bit_count()&1
+
+        bas1acc=blade1.basis>>1
+        for i in range(blade1.basis.bit_length().bit_length()):#lol
+            bas1acc^=(bas1acc>>(1<<i))
         invert=(bas1acc&blade2.basis).bit_count()&1
+
         
         #calculate negative alligned "inversions"
         invert^=(self.negamask&blade1.basis&blade2.basis).bit_count()&1
@@ -86,7 +92,7 @@ class sortgeo:
     #def filterzero(it):
     #    return list(i for i in it if i.magnitude!=0)
 
-    def __init__(self,algebra,lst=None,compress=False) -> None:
+    def __init__(self,algebra:algebra,lst=None,compress=False) -> None:
         if lst is None:
             lst=[]
         self.algebra=algebra
@@ -110,7 +116,7 @@ class sortgeo:
     def __str__(self) -> str:
         if not self.lst:
             return self.algebra.bladestr(self.algebra.zero)
-        return "".join(self.algebra.bladestr(b) for b in sorted(self.lst,key=self.algebra.bladesortkey))
+        return " ".join(self.algebra.bladestr(b) for b in sorted(self.lst,key=self.algebra.bladesortkey))
     
     def __repr__(self):
         return self.__str__()
