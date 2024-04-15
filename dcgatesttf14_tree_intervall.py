@@ -109,18 +109,19 @@ from intervallarethmetic1 import intervallareth
 t0=time.time()
 
 
-lowerbound=-64
-upperbound=64
+
+from voxel2 import Voxels
 depth=16
 maxvoxelnum=100000
 
-intervallx,intervally,intervallz=[intervallareth(np.array([lowerbound]),np.array([upperbound])) for _ in range(3)]
+voxels=Voxels(64)
 #intervallx,intervally,intervallz=intervallx+17.1225253,intervally+13.127876,intervallz+32.135670
 zerrovec=np.zeros(3)
 
 lastvoxnum=1
 for j in range(1,depth+1):
-    intervalls=[]
+
+    """intervalls=[]
     for intervall,order in zip((intervallx,intervally,intervallz),(1,2,4)):
         mid=intervall.mid()
         intervalls.append(
@@ -129,8 +130,9 @@ for j in range(1,depth+1):
                 np.concatenate([[mid,intervall.max][i&order==0] for i in range(8)])
                 #TODO intervall concatenate method
             )
-        )
-    intervallx,intervally,intervallz=intervalls
+        )"""
+    intervallx,intervally,intervallz=voxels.intervallarethpoints()
+
 
     #print(np.stack([intervallx.min,intervallx.max,intervally.min,intervally.max,intervallz.min,intervallz.max]).T)
     #delete cells without 0
@@ -140,8 +142,8 @@ for j in range(1,depth+1):
     voxelswithzerro=np.all([vec.containsnum() for vec in symeval(equations,intervallx,intervally,intervallz)],axis=0)#TODO
 
     #TODO wenn ableitung sum(abs(evaluatefun(e,cache)) for e in equations).containsnum() nach x,y,z contains 0,0,0 
-
-    intervallx,intervally,intervallz=[intervallareth(intervall.min[voxelswithzerro],intervall.max[voxelswithzerro]) for intervall in (intervallx,intervally,intervallz)]
+    print(voxelswithzerro)
+    voxels.removecells(voxelswithzerro)
     
     """if len(intervallx.min)>10000 or 1:
         
@@ -197,6 +199,7 @@ for j in range(1,depth+1):
     if len(voxelswithzerro)>maxvoxelnum:
         depth=j
         break
+    voxels.subdivide()
 
 
 print(time.time()-t0)
@@ -205,91 +208,12 @@ print(time.time()-t0)
 
 
 
-
-#todo: convert to pyvista code
-import vtk
-grid = vtk.vtkUnstructuredGrid()
-
-
-n_cells = len(intervallx.min)
-
-
-c_n0 = np.stack((intervallx.min, intervally.min, intervallz.min), axis=1)
-c_n1 = np.stack((intervallx.max, intervally.min, intervallz.min), axis=1)
-c_n2 = np.stack((intervallx.min, intervally.max, intervallz.min), axis=1)
-c_n3 = np.stack((intervallx.max, intervally.max, intervallz.min), axis=1)
-# - Top
-c_n4 = np.stack((intervallx.min, intervally.min, intervallz.max), axis=1)
-c_n5 = np.stack((intervallx.max, intervally.min, intervallz.max), axis=1)
-c_n6 = np.stack((intervallx.min, intervally.max, intervallz.max), axis=1)
-c_n7 = np.stack((intervallx.max, intervally.max, intervallz.max), axis=1)
-
-# - Concatenate
-#all_nodes = np.concatenate(
-#    (c_n1, c_n2, c_n3, c_n4, c_n5, c_n6, c_n7, c_n8), axis=0
-#)
-all_nodes=np.empty((n_cells*8,3))
-all_nodes[0::8] = c_n0
-all_nodes[1::8] = c_n1
-all_nodes[2::8] = c_n2
-all_nodes[3::8] = c_n3
-all_nodes[4::8] = c_n4
-all_nodes[5::8] = c_n5
-all_nodes[6::8] = c_n6
-all_nodes[7::8] = c_n7
-
-#print(all_nodes[0::8,(0,1)])
-all_nodes, ind_nodes = np.unique(all_nodes , return_inverse=True, axis=0)
-#ind_nodes=np.arange(n_cells*8)
-from vtk.util import numpy_support as nps
-cells = vtk.vtkCellArray()
-pts = vtk.vtkPoints()
-
-
-
-print()
-
-
-# Add unique nodes as points in output
-#pts.SetData(interface.convert_array(all_nodes))
-pts.SetData(nps.numpy_to_vtk(all_nodes))
-#pts.SetData(pv.vtk_points(all_nodes))
-#pts=pv.vtk_points(all_nodes)
-#pts=pv.PointSet(all_nodes)
-#print(pts)
-# Add cell vertices
-#j = np.tile(np.arange(8), n_cells)* n_cells
-#print(j)
-#arridx = np.add(j, np.repeat(np.arange(n_cells), 8))
-arridx=np.arange(8*n_cells)
-#print(arridx)
-ids = ind_nodes[arridx].reshape((n_cells, 8))
-#ids=np.arange(n_cells*8).reshape((n_cells, 8),order='F')
-#print(ids)
-
-#cells_mat = np.concatenate(
-#    (np.ones((n_cells, 1), dtype=np.int_) * 8, ids), axis=1
-#)
-cells_mat = np.concatenate(
-    (np.full((n_cells, 1),8) , ids), axis=1
-)
-
-#print(cells_mat)
-pv.StructuredGrid()
-cells = vtk.vtkCellArray()
-cells.SetNumberOfCells(n_cells)
-cells.SetCells(
-    n_cells, nps.numpy_to_vtk(cells_mat.ravel(), deep=True, array_type=vtk.VTK_ID_TYPE)
-)
-# Set the output
-grid.SetPoints(pts)
-grid.SetCells(vtk.VTK_VOXEL, cells)
 
 
 
 print(time.time()-t0)
 #grid = pv.UnstructuredGrid(cells_mat.ravel(), np.array([pv.CellType.VOXEL]*len(cells_mat), np.int8), all_nodes.ravel())
-plt.add_mesh(grid,opacity=0.5)
+plt.add_mesh(voxels.gridify(),opacity=0.5)
 plt.show()
 
 

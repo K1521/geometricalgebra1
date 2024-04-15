@@ -1,4 +1,4 @@
-from blademul import sortgeo,algebra
+from algebra.blademul import sortgeo,algebra
 import sympy
 
 dcga=algebra(8,2)
