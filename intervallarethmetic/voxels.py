@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 from vtk.util import numpy_support as nps
 import vtk
-from intervallarethmetic1 import intervallareth
+from intervallarethmetic.intervallarethmetic1 import intervallareth
 
 class Voxels:
     subvox=np.array(list(v[::-1] for v in itertools.product((0,1),repeat=3)))

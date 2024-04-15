@@ -104,7 +104,7 @@ def symeval(equations,x,y,z):
 
 
         
-from intervallarethmetic1 import intervallareth
+from intervallarethmetic.intervallarethmetic1 import intervallareth
 
 t0=time.time()
 

@@ -104,13 +104,13 @@ def symeval(equations,x,y,z):
 
 
         
-from intervallarethmetic1 import intervallareth
-
+from intervallarethmetic.intervallarethmetic1 import intervallareth
+from intervallarethmetic.voxels import Voxels
 t0=time.time()
 
 
 
-from voxel2 import Voxels
+
 depth=16
 maxvoxelnum=100000
 
