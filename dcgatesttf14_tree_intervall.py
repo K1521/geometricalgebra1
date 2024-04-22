@@ -209,11 +209,18 @@ print(time.time()-t0)
 
 
 
+import cProfile, pstats, io
+from pstats import SortKey
+pr = cProfile.Profile(builtins=False)
+pr.enable()
 
-
-print(time.time()-t0)
+#print(time.time()-t0)
 #grid = pv.UnstructuredGrid(cells_mat.ravel(), np.array([pv.CellType.VOXEL]*len(cells_mat), np.int8), all_nodes.ravel())
 plt.add_mesh(voxels.gridify(),opacity=0.5)
+pr.disable()
+pstats.Stats(pr).sort_stats('tottime').print_stats(10)
+
+
 plt.show()
 
 

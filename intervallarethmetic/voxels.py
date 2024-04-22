@@ -4,6 +4,27 @@ from vtk.util import numpy_support as nps
 import vtk
 from intervallarethmetic.intervallarethmetic1 import intervallareth
 
+def uniquereplacement(points):
+    #points=list(map(tuple,points))
+    indexdict=dict()
+    #indexreverse=[]
+    #for p in points:
+    #    indexreverse.append(indexdict.setdefault(p,len(indexdict)))
+        #indexdict.setdefault(p,len(indexdict))
+        #indexreverse.append(indexdict[p])
+        #index=indexdict.get(p,None)
+        #if index is None:
+        #    indexdict[p]=len()
+        #indexreverse.append(index)
+    indexreverse=[indexdict.setdefault(p,len(indexdict)) for p in zip(*points.T)]
+
+    pointsnew=np.array(list(indexdict.keys()))
+    #print(pointsnew)
+    return pointsnew,np.array(indexreverse)
+
+
+
+
 class Voxels:
     subvox=np.array(list(v[::-1] for v in itertools.product((0,1),repeat=3)))
     def __init__(self,delta):
@@ -24,12 +45,15 @@ class Voxels:
         #self.voxels only contains the lower left rear point of the voxel
         #all_points contains all voxel points
         #this works because subvox has different dimensions than voxels
-        all_points=np.vstack(self.voxels[:,None,:]+Voxels.subvox)
+        #all_points=np.vstack(self.voxels[:,None,:]+Voxels.subvox)
+        all_points=(self.voxels[:,None,:]+Voxels.subvox).reshape(-1,3)
+        
 
         n_cells=len(self.voxels)
 
         #remove duplicates
         points, ind_nodes = np.unique(all_points , return_inverse=True, axis=0)
+        #points, ind_nodes =uniquereplacement(all_points)
         
         #scale to cordinates
         points=points*self.delta
