@@ -1,8 +1,9 @@
 import numpy as np
 
 from intervallarethmetic.intervallarethmetic1 import intervallareth
+#from algebra.algebrabase import SimpleAlgebraBase
 
-class inter3d:
+class inter3d(SimpleAlgebraBase):
     def __str__(self):
         return str(self.coeffs)
     def __init__(self,coeffs=None):
