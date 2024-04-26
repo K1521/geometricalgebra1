@@ -1,8 +1,8 @@
 
 from algebra.algebrabase import SimpleAlgebraBase
+import numpy as np
 
-
-class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator
+class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 variables
     def convert(self,x):
         if isinstance(x,xyzderiv):
             return x
@@ -28,6 +28,9 @@ class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator
             #g'(f(x))=e*f**(e-1)  f=s.f
             gf=e*s.f**(e-1) 
             return xyzderiv(s.f**e,[sdf*gf for sdf in s.df])
+    def __abs__(s):
+        sgn=np.sign(s.f)
+        return xyzderiv(abs(s.f),[sgn*sdf for sdf in s.df])
 
 if __name__=="__main__":
     import sympy as sy

@@ -11,7 +11,7 @@ import numpy as np
 t=toroid(1,.5)
 p=Plane(0.1,0.1,0.1,0.5)
 
-vis=p^t#^Plane(0.1,0.1,0.001,0.5)#^Plane(0.001,0.001,0.1,0.1)
+vis=t#^p#^Plane(0.1,0.1,0.001,0.5)#^Plane(0.001,0.001,0.1,0.1)
 
 
 
@@ -61,7 +61,7 @@ for j in range(1,depth+1):
     p=point(ix*voxels.delta/2+intervallx.mid(),
                iy*voxels.delta/2+intervally.mid(),
                iz*voxels.delta/2+intervallz.mid())
-    print("p")
+    #print("p")
     
     import cProfile, pstats, io
     from pstats import SortKey

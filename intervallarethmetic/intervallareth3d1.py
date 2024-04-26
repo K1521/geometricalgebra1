@@ -1,24 +1,22 @@
 import numpy as np
 
 from intervallarethmetic.intervallarethmetic1 import intervallareth
-#from algebra.algebrabase import SimpleAlgebraBase
+from algebra.algebrabase import SimpleAlgebraBase
 
 class inter3d(SimpleAlgebraBase):
     def __str__(self):
         return str(self.coeffs)
     def __init__(self,coeffs=None):
         self.coeffs=coeffs or dict()
-    def __rmul__(s,o):return s*o
-    def __truediv__(s,o):return s*(1/o)
-    def __neg__(s):return s*(-1)
-    def __mul__(s,o):
-        if not isinstance(o,inter3d):
-            if o==0:
-                #print(o)
-                return inter3d()
-            return s*inter3d({(0,0,0):o})
+    
+    def convert(self, x) -> "inter3d":
+        if isinstance(x,inter3d):
+            return x
+        if isinstance(x, (int, float)) and x==0:
+            return inter3d()
+        return inter3d({(0,0,0):x})
 
-
+    def mul(s,o) -> "inter3d":
         coeffs=dict()
         for es,cs in s.coeffs.items():
             for eo,co in o.coeffs.items():
@@ -27,10 +25,8 @@ class inter3d(SimpleAlgebraBase):
                 #coeffs[e]=cs*co+ c if c else cs*co
                 coeffs[e]=cs*co+ c
         return inter3d(coeffs)
-    def __radd__(s,o):return s+o
-    def __add__(s,o):
-        if not isinstance(o,inter3d):
-            return s+inter3d({(0,0,0):o})
+    
+    def add(s,o) -> "inter3d":
         
         small, large = sorted([s.coeffs, o.coeffs], key=len)
         result = large.copy()
@@ -41,13 +37,6 @@ class inter3d(SimpleAlgebraBase):
             result[key] = value+ r
         
         return inter3d(result)
-    def __sub__(s,o):return s+(-1)*o
-
-    def __pow__(s,n):
-        r=1
-        for i in range(n):
-            r*=s
-        return r
 
     def tointer(self):#maybe it would be possible to do something like i**2-i**3 to eliminate i**3 and reduce i**2 because i**2>i**3 if i=[0,1]
         l=0
