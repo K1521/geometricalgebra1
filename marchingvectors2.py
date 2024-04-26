@@ -176,12 +176,24 @@ for i in range(len(combined_array)):
 
            
                 
-        faces.extend([3,len(vertices),len(vertices)+1,len(vertices)+2])
+        #faces.extend([3,len(vertices),len(vertices)+1,len(vertices)+2])
         vertices.extend(plst)
 #TODO reduce points
+#TODO use strips
+#TODO remap verts
+#TODO remap lot
+print(np.array(faces))
+
+
+ids=np.arange(len(vertices)).reshape((-1, 3))
+faces = np.concatenate(
+    (np.full((len(vertices)//3, 1),3) , ids), axis=1
+).ravel()
+
+#print(faces)
 mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
 #print(vertices)
 plt.add_mesh(mesh,opacity=0.5,show_edges=0,)
 plt.show()
-print(df)
+
 
