@@ -24,7 +24,7 @@ class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 var
         #g(f(x))'=g'(f(x))*f'(x) g(x)=x**e g'(x)=e*x**(e-1) 
         if   e == 0:return s.convert(1)
         elif e == 1:return s  # Any base raised to the power of 1 is itself
-        elif e > 1:
+        else:
             #g'(f(x))=e*f**(e-1)  f=s.f
             gf=e*s.f**(e-1) 
             return xyzderiv(s.f**e,[sdf*gf for sdf in s.df])

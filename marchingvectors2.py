@@ -7,15 +7,16 @@ import time
 import numpy as np
 #import tensorflow as tf
 #import matplotlib.pyplot as mplt
+from intervallarethmetic.derivativexyz import xyzderiv
 
 t=toroid(1,.5)
 p=Plane(0.1,0.1,0.1,0.5)
 
-vis=t#^p#^Plane(0.1,0.1,0.001,0.5)#^Plane(0.001,0.001,0.1,0.1)
+vis=t^p#^Plane(0.1,0.1,0.001,0.5)#^Plane(0.001,0.001,0.1,0.1)
 #vis=Plane(0.1,0.1,0.2,0.5)
 #vis=point(0.5,0.7,0.3)
-
-
+vis=Plane(0.1,0.1,0.2,0.5)
+vis=t
 print(p)
 
 
@@ -43,7 +44,7 @@ t0=time.time()
 
 
 depth=16
-maxvoxelnum=10000
+maxvoxelnum=5000
 
 voxels=Voxels(64)
 #intervallx,intervally,intervallz=intervallx+17.1225253,intervally+13.127876,intervallz+32.135670
@@ -116,10 +117,12 @@ allpoints=combined_array.reshape(-1, 3)
 
 def calcderiv(allpoints,vis):
     #calculate the derivative of point(x,y,z).inner(vis) with respect to x,y,z
-    from intervallarethmetic.derivativexyz import xyzderiv
+    
     u, rindices = np.unique(allpoints, return_inverse=True,axis=0)#reduce to unique to reduce redundant computation
     xtf,ytf,ztf=(xyzderiv(var,d)for var,d in zip(u.T,[[1,0,0],[0,1,0],[0,0,1]]))
     iprod=point(xtf,ytf,ztf).inner(vis)
+    print(f"{len(iprod.lst)=}")
+    #voltf=sum(abs(blade.magnitude) for blade in iprod.lst)
     voltf=sum(abs(blade.magnitude) for blade in iprod.lst)
     delta=np.stack(voltf.df,axis=-1)#make the derivatives to a array of vectors
     return voltf.f[rindices],delta[rindices]#f,df
@@ -201,7 +204,33 @@ for i in range(len(combined_array)):
 print(np.array(faces))
 
 
-ids=np.arange(len(vertices)).reshape((-1, 3))
+
+#ids=np.arange(len(vertices)).reshape((-1, 3))
+vertices,ids=np.unique(np.array(vertices).reshape(-1, 3),return_inverse=True,axis=0)
+ids=ids.reshape(-1,3)
+print(len(vertices),len(ids))
+faces = np.concatenate(
+    (np.full((len(ids), 1),3) , ids), axis=1
+).ravel()
+
+
+for i in range(10):#Gauß-newton steps
+    xtf,ytf,ztf=(xyzderiv(var,d)for var,d in zip(vertices.T,[[1,0,0],[0,1,0],[0,0,1]]))
+    iprod=point(xtf,ytf,ztf).inner(vis)
+    voltf=sum(abs(blade.magnitude)**2 for blade in iprod.lst)
+    delta=np.stack(voltf.df,axis=-1)#make the derivatives to a array of vectors
+    delta_norm_squared = np.sum(delta**2, axis=1)
+    delta_norm_squared_safe = np.where(delta_norm_squared == 0, 1, delta_norm_squared)
+    vertices-=delta*(voltf.f/delta_norm_squared_safe)[:,None]
+
+
+#print(faces)
+mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
+#print(vertices)
+plt.add_mesh(mesh,opacity=1,show_edges=0,)
+plt.show()
+
+"""ids=np.arange(len(vertices)).reshape((-1, 3))
 faces = np.concatenate(
     (np.full((len(vertices)//3, 1),3) , ids), axis=1
 ).ravel()
@@ -210,6 +239,8 @@ faces = np.concatenate(
 mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
 #print(vertices)
 plt.add_mesh(mesh,opacity=0.5,show_edges=0,)
-plt.show()
+plt.show()"""
+
+
 
 
