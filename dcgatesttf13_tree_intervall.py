@@ -104,7 +104,7 @@ def symeval(equations,x,y,z):
 
 
         
-from intervallarethmetic1 import intervallareth
+from intervallareth.intervallarethmetic1 import intervallareth
 
 t0=time.time()
 
@@ -249,7 +249,7 @@ pts = vtk.vtkPoints()
 
 print()
 
-
+nps.numpy_to_vtk(all_nodes)
 # Add unique nodes as points in output
 #pts.SetData(interface.convert_array(all_nodes))
 pts.SetData(nps.numpy_to_vtk(all_nodes))
@@ -275,7 +275,7 @@ cells_mat = np.concatenate(
 )
 
 #print(cells_mat)
-pv.StructuredGrid()
+#pv.StructuredGrid()
 cells = vtk.vtkCellArray()
 cells.SetNumberOfCells(n_cells)
 cells.SetCells(

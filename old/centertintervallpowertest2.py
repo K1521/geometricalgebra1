@@ -1,4 +1,4 @@
-from intervallarethmetic1 import intervallareth
+from intervallareth.intervallarethmetic1 import intervallareth
 
 import math
 import sympy

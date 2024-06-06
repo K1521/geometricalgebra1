@@ -1,4 +1,4 @@
-from intervallarethmetic1 import intervallareth
+from intervallareth.intervallarethmetic1 import intervallareth
 
 pn=intervallareth(-1,1)
 n=intervallareth(-1,0)
