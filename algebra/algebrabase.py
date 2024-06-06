@@ -19,9 +19,11 @@ class SimpleAlgebraBase:
         raise NotImplementedError("Static abstract method not implemented")
     
     def __sub__(self, other)->"SimpleAlgebraBase":
-        return self.sub(self, self.convert(other)) 
+        #return self.sub(self, self.convert(other)) 
+        return self.sub(self.convert(other)) 
     def __rsub__(self, other)->"SimpleAlgebraBase":
-        return self.sub(self.convert(other), self)
+        #return self.sub(self.convert(other), self)
+        return self.convert(other).sub(self)
     def sub(a, b)->"SimpleAlgebraBase":
         return a.add(-b)
     def __neg__(self)->"SimpleAlgebraBase":

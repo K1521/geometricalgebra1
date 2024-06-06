@@ -58,3 +58,9 @@ def toroid(R,r):
     dSq=R*R-r*r
     return Tt4+2*Tt2*dSq+T1*dSq*dSq-4*R*R*(Txx+Tyy)
 
+def CGA1_Translator(x,y,z):
+    return 1 - (1/2)*(x*e1+y*e2+z*e3)*ei1
+def CGA2_Translator(x,y,z):
+    return 1 - (1/2)*(x*e6+y*e7+z*e8)*ei2
+def Translator(x,y,z):
+    return CGA1_Translator(x,y,z)^CGA2_Translator(x,y,z)
