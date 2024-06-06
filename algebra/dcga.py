@@ -1,6 +1,10 @@
 from algebra.blademul import sortgeo,algebra
-import sympy
 
+#import sympy
+import numpy as np
+
+def sqrt(x):
+    return np.sqrt(x)
 dcga=algebra(8,2)
 
 
@@ -32,12 +36,12 @@ Tyy=e7.outer(e2)
 def CGA1_Plane(x,y,z,h):
     vec=(x*e1+y*e2+z*e3)
     #return vec/sympy.sqrt(vec.inner(vec).toscalar())+h*ei1
-    return vec+h*sympy.sqrt(vec.inner(vec).toscalar())*ei1
+    return vec+h*sqrt(vec.inner(vec).toscalar())*ei1
     #return vec+ei1
 def CGA2_Plane(x,y,z,h):
     vec=(x*e6+y*e7+z*e8)
     #return vec/sympy.sqrt(vec.inner(vec).toscalar())+h*ei2
-    return vec+h*sympy.sqrt(vec.inner(vec).toscalar())*ei2
+    return vec+h*sqrt(vec.inner(vec).toscalar())*ei2
     #return vec+ei2
 #CGA2_Plane = { Normalize(_P(1)*e6 + _P(2)*e7 + _P(3)*e8) + _P(4)*ei2 }
 def Plane(x,y,z,h):
@@ -54,3 +58,9 @@ def toroid(R,r):
     dSq=R*R-r*r
     return Tt4+2*Tt2*dSq+T1*dSq*dSq-4*R*R*(Txx+Tyy)
 
+def CGA1_Translator(x,y,z):
+    return 1 - (1/2)*(x*e1+y*e2+z*e3)*ei1
+def CGA2_Translator(x,y,z):
+    return 1 - (1/2)*(x*e6+y*e7+z*e8)*ei2
+def Translator(x,y,z):
+    return CGA1_Translator(x,y,z)^CGA2_Translator(x,y,z)

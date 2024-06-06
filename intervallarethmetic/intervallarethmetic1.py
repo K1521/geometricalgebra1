@@ -65,3 +65,8 @@ class intervallareth:
             return intervallareth(np.where((self.min<=0)&(0<=self.max), 0, np.min(combis, axis=0)),np.max(combis, axis=0))
         else:
             return intervallareth(self.min**exponent,self.max**exponent)
+    def __truediv__(self,other):
+        if isinstance(other,intervallareth):
+            raise ValueError("division only suported with scalars")
+        return self*(1/other)
+    
