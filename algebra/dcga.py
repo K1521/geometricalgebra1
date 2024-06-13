@@ -59,8 +59,41 @@ def toroid(R,r):
     return Tt4+2*Tt2*dSq+T1*dSq*dSq-4*R*R*(Txx+Tyy)
 
 def CGA1_Translator(x,y,z):
-    return 1 - (1/2)*(x*e1+y*e2+z*e3)*ei1
+    return 1 - (1/2)*(e1*x+e2*y+e3*z)*ei1
 def CGA2_Translator(x,y,z):
-    return 1 - (1/2)*(x*e6+y*e7+z*e8)*ei2
+    return 1 - (1/2)*(e6*x+e7*y+e8*z)*ei2
 def Translator(x,y,z):
     return CGA1_Translator(x,y,z)^CGA2_Translator(x,y,z)
+
+def IE1():
+    return e1 ^ e2 ^ e3
+
+def IE2():
+    return e6 ^ e7 ^ e8
+
+def IC1():
+    return e1 ^ e2 ^ e3 ^ e4 ^ e5
+
+def IC2():
+    return e6 ^ e7 ^ e8 ^ e9 ^ e10
+
+def ID():
+    return e1 ^ e2 ^ e3 ^ e4 ^ e5 ^ e6 ^ e7 ^ e8 ^ e9 ^ e10
+
+def DD(P1):
+    return -(P1.inner(ID()))
+
+def C1D(P1):
+    return -(P1.inner(IC1()))
+
+def C2D(P1):
+    return -(P1.inner(IC2()))
+
+def E1D(P1):
+    return -(P1.inner(IE1()))
+
+def E2D(P1):
+    return -(P1.inner(IE2()))
+
+def Dual(P1):
+    return DD(P1)

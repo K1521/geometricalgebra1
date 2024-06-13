@@ -28,7 +28,7 @@ step=101
 
 
 
-x,y,z=multivec.skalar(sympy.symbols('x y z'))
+x,y,z=multivec.scalar(sympy.symbols('x y z'))
 expr=point(x,y,z).inner(vis)
 equations=[sympy.simplify(blade.magnitude*2**10) for blade in expr.lst]
 equationsnew=[]

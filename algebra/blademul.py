@@ -2,11 +2,13 @@ import itertools
 from collections import defaultdict
 
 class blade:
+    __slots__ = ['basis', 'magnitude']
     def __init__(self,basis,magnitude=1) -> None:
         self.magnitude=magnitude
         self.basis=basis
     def __repr__(self):
         return f"blade({self.basis:b},{self.magnitude})"
+    
 
 class algebra:
     def __init__(self,posi=3,nega=0,neut=0,order="pnz"):
@@ -86,6 +88,30 @@ class algebra:
         l=self.basedecode(blade.basis)
         return len(l),l
     
+    def grade(self,bladeo):
+        return bladeo.basis.bit_count()
+    def reverse(self,bladeo):
+        g=self.grade(bladeo)
+        sign=(-1)**(g*(g-1)//2)
+        if sign==1:
+            return bladeo
+        else:
+            return blade(bladeo.basis,-bladeo.magnitude)
+    def conjugate(self,bladeo):
+        g=self.grade(bladeo)
+        sign=(-1)**(g*(g+1)//2)
+        if sign==1:
+            return bladeo
+        else:
+            return blade(bladeo.basis,-bladeo.magnitude)
+    def involute(self,bladeo):
+        g=self.grade(bladeo)
+        sign=(-1)**g
+        if sign==1:
+            return bladeo
+        else:
+            return blade(bladeo.basis,-bladeo.magnitude)
+    
 
 class sortgeo:
     #@staticmethod
@@ -106,11 +132,10 @@ class sortgeo:
         return lst
     def monoblades(self):
         return [sortgeo(self.algebra,[blade(1<<i)])for i in range(self.algebra.dim)]
-    def skalar(self,num):#makes a skalar from float/list of float
-        try:
-            return[sortgeo(self.algebra,[blade(0,x)]) for x in num]
-        except TypeError:
-            return sortgeo(self.algebra,[blade(0,num)])
+    def scalars(self,num):#makes a list of skalars from float/list of float
+        return[sortgeo(self.algebra,[blade(0,x)]) for x in num]
+    def scalar(self,num):
+        return sortgeo(self.algebra,[blade(0,num)])
         
 
     def __str__(self) -> str:
@@ -145,7 +170,7 @@ class sortgeo:
         if isinstance(othe,sortgeo):
             return sortgeo(self.algebra,self.lst+othe.lst,compress=True)
         else:
-            self+self.scalar(othe)
+            return self+self.scalar(othe)
     def __sub__(self,othe):
         return self+ (-othe)
     def __rsub__(self,othe):
@@ -154,9 +179,9 @@ class sortgeo:
         return sortgeo(self.algebra,(blade(b.basis,-b.magnitude) for b in self.lst),compress=False)
     def __mul__(self,othe):
         if isinstance(othe,sortgeo):
-            return sortgeo(self.algebra,(self.algebra.geo(x,y) for x in self.lst for y in othe.lst),compress=True)
-        return sortgeo(self.algebra,(blade(b.basis,b.magnitude*othe) for b in self.lst),compress=False)
-    def __rmul__(self,othe):
+            return sortgeo(self.algebra,(self.algebra.geo(x,y) for x in self.lst for y in othe.lst),compress=True)#geometric product
+        return sortgeo(self.algebra,(blade(b.basis,b.magnitude*othe) for b in self.lst),compress=False)#skalarmul
+    def __rmul__(self,othe):#skalarmul
         return sortgeo(self.algebra,(blade(b.basis,othe*b.magnitude) for b in self.lst),compress=False)
     def __truediv__(self,othe):
         if isinstance(othe,sortgeo):
@@ -175,3 +200,10 @@ class sortgeo:
             if self.lst[0].basis==0:
                 return self.lst[0].magnitude
         raise Exception("not convertible")
+    
+    def involute(self):
+        return sortgeo(self.algebra,(self.algebra.involute(b) for b in self.lst),compress=False)
+    def conjugate(self):
+        return sortgeo(self.algebra,(self.algebra.conjugate(b) for b in self.lst),compress=False)
+    def reverse(self):
+        return sortgeo(self.algebra,(self.algebra.reverse(b) for b in self.lst),compress=False)

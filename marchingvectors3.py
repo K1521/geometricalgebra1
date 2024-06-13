@@ -40,7 +40,10 @@ from intervallarethmetic.intervallarethmetic1 import intervallareth
 from intervallarethmetic.voxels import Voxels
 t0=time.time()
 
-
+def translate(obj, x, y, z):
+    T = Translator(x, y, z)
+    T_dagger = T.reverse()
+    return T * obj * T_dagger
 
 
 depth=16
@@ -58,21 +61,27 @@ for j in range(1,depth+1):
 
 
     intervallx,intervally,intervallz=voxels.intervallarethpoints()
-    x,y,z=ix*voxels.delta/2+intervallx.mid(),iy*voxels.delta/2+intervally.mid(),iz*voxels.delta/2+intervallz.mid()
+    #x,y,z=ix*voxels.delta/2+intervallx.mid(),iy*voxels.delta/2+intervally.mid(),iz*voxels.delta/2+intervallz.mid()
     
     #p=point(ix*voxels.delta/2+intervallx.mid(),
     #        iy*voxels.delta/2+intervally.mid(),
     #        iz*voxels.delta/2+intervallz.mid())
-    p=point(ix*voxels.delta/2+intervallx.mid(),
-            iy*voxels.delta/2+intervally.mid(),
-            iz*voxels.delta/2+intervallz.mid())
+    
+    zerop=point(multivec.scalar(ix*voxels.delta/2),
+                multivec.scalar(iy*voxels.delta/2),
+                multivec.scalar(iz*voxels.delta/2))
     #print("p")
+    #m=multivec.scalar(intervallx.mid())
+    vist=translate(vis,
+        multivec.scalar(intervallx.mid()),
+        multivec.scalar(intervally.mid()),
+        multivec.scalar(intervallz.mid()))
     
     import cProfile, pstats, io
     from pstats import SortKey
     pr = cProfile.Profile(builtins=False)
     pr.enable()
-    expr=p.inner(vis)
+    expr=zerop.inner(vist)
     
     #plt.add_mesh(voxels.gridify(),opacity=0.5)
     pr.disable()
