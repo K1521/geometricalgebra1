@@ -82,6 +82,12 @@ class algebra:
             return self.zero
         return self.geo(blade1,blade2)
     
+    def reverse(self,blade):
+        if blade.basis.bit_count()&1:
+            return blade(blade.basis, -blade.magnitude)
+        else:
+            return blade
+    
     def bladesortkey(self,blade):
         l=self.basedecode(blade.basis)
         return len(l),l
@@ -152,6 +158,8 @@ class sortgeo:
         return (-self)+ othe
     def __neg__(self):
         return sortgeo(self.algebra,(blade(b.basis,-b.magnitude) for b in self.lst),compress=False)
+    def reverse(self):
+        return sortgeo(self.algebra,(self.algebra.reverse(b) for b in self.lst),compress=False)
     def __mul__(self,othe):
         if isinstance(othe,sortgeo):
             return sortgeo(self.algebra,(self.algebra.geo(x,y) for x in self.lst for y in othe.lst),compress=True)
@@ -163,11 +171,6 @@ class sortgeo:
             raise Exception("currently only integer/float division is supported")
         return sortgeo(self.algebra,(blade(b.basis,b.magnitude/othe) for b in self.lst),compress=False)
     def toscalar(self):
-        if not self.lst:
-            return 0
-        if len(self.lst)==1:
-            if self.lst[0].basis==0:
-                return self.lst[0].magnitude
         self.compress()
         if not self.lst:
             return 0
