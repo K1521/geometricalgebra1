@@ -1,0 +1,35 @@
+
+import os
+
+os.environ["NUMBA_DISABLE_JIT"] = "1"
+#os.environ.
+import numba
+from numba.core.config import DISABLE_JIT
+
+
+#print(globals())
+from clifford.dg3c import *  # import GA for 3D space
+
+import math
+import sympy as sy
+x,y,z=sy.symbols("x,y,z")
+
+
+
+
+p=up((1,2,3))
+p.dual()
+
+
+T1 =cyclide_ops["T1"]
+Tt2=cyclide_ops["Tt2"]
+Tt4=cyclide_ops["Tt4"]
+Txx=cyclide_ops["Tx2"]
+Tyy=cyclide_ops["Ty2"]
+def toroid(R,r):
+    dSq=R*R-r*r
+    return Tt4+2*Tt2*dSq+T1*dSq*dSq-4*R*R*(Txx+Tyy)
+
+t=toroid(1,.5)
+
+print(t^p)

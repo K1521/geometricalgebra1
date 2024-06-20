@@ -12,14 +12,11 @@ from intervallarethmetic.derivativexyz import xyzderiv
 t=toroid(1,.5)
 p=Plane(0.1,0.1,0.1,0.5)
 
-
-t=toroid(1,1)
-p=Plane(0.1,0.1,0.1,0)
 vis=t^p#^Plane(0.1,0.1,0.001,0.5)#^Plane(0.001,0.001,0.1,0.1)
 #vis=Plane(0.1,0.1,0.2,0.5)
 #vis=point(0.5,0.7,0.3)
-#vis=Plane(0.1,0.1,0.2,0.5)
-#vis=t
+vis=Plane(0.1,0.1,0.2,0.5)
+vis=t
 print(p)
 
 
@@ -43,7 +40,10 @@ from intervallarethmetic.intervallarethmetic1 import intervallareth
 from intervallarethmetic.voxels import Voxels
 t0=time.time()
 
-
+def translate(obj, x, y, z):
+    T = Translator(x, y, z)
+    T_dagger = T.reverse()
+    return T * obj * T_dagger
 
 
 depth=16
@@ -61,28 +61,34 @@ for j in range(1,depth+1):
 
 
     intervallx,intervally,intervallz=voxels.intervallarethpoints()
-    x,y,z=ix*voxels.delta/2+intervallx.mid(),iy*voxels.delta/2+intervally.mid(),iz*voxels.delta/2+intervallz.mid()
+    #x,y,z=ix*voxels.delta/2+intervallx.mid(),iy*voxels.delta/2+intervally.mid(),iz*voxels.delta/2+intervallz.mid()
     
     #p=point(ix*voxels.delta/2+intervallx.mid(),
     #        iy*voxels.delta/2+intervally.mid(),
     #        iz*voxels.delta/2+intervallz.mid())
-    p=point(ix*voxels.delta/2+intervallx.mid(),
-            iy*voxels.delta/2+intervally.mid(),
-            iz*voxels.delta/2+intervallz.mid())
-    #print("p")
     
-    #import cProfile, pstats, io
-    #from pstats import SortKey
-    #pr = cProfile.Profile(builtins=False)
-    #pr.enable()
-    expr=p.inner(vis)
+    zerop=point(multivec.scalar(ix*voxels.delta/2),
+                multivec.scalar(iy*voxels.delta/2),
+                multivec.scalar(iz*voxels.delta/2))
+    #print("p")
+    #m=multivec.scalar(intervallx.mid())
+    vist=translate(vis,
+        multivec.scalar(intervallx.mid()),
+        multivec.scalar(intervally.mid()),
+        multivec.scalar(intervallz.mid()))
+    
+    import cProfile, pstats, io
+    from pstats import SortKey
+    pr = cProfile.Profile(builtins=False)
+    pr.enable()
+    expr=zerop.inner(vist)
     
     #plt.add_mesh(voxels.gridify(),opacity=0.5)
-    #pr.disable()
-    #pstats.Stats(pr).sort_stats('tottime').print_stats(10)
+    pr.disable()
+    pstats.Stats(pr).sort_stats('tottime').print_stats(10)
 
    
-    voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst[:]],axis=0)
+    voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst],axis=0)
     voxels.removecells(voxelswithzerro)
     
     
@@ -233,7 +239,7 @@ for i in range(10):#Gauß-newton steps
 #print(faces)
 mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
 #print(vertices)
-plt.add_mesh(mesh,opacity=1,show_edges=1,)
+plt.add_mesh(mesh,opacity=1,show_edges=0,)
 plt.show()
 
 """ids=np.arange(len(vertices)).reshape((-1, 3))

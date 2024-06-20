@@ -10,9 +10,12 @@ class intervallareth:
 
     def __mul__(self,other):
         #todo optimise case if self==other
-        if other==self:return self**2
+        if other is self:return self**2
         if isinstance(other,intervallareth):
             combis=[self.min*other.min,self.min*other.max,self.max*other.min,self.max*other.max]
+            return intervallareth(np.min(combis, axis=0),np.max(combis, axis=0))
+        if isinstance(other, np.ndarray):
+            combis=[self.min*other,self.max*other]
             return intervallareth(np.min(combis, axis=0),np.max(combis, axis=0))
         if other==0:return 0
         if other==1:return self
