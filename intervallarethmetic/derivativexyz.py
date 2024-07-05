@@ -10,7 +10,7 @@ class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 var
 
     def __init__(self,f,df):
         self.f=f
-        self.df=df#df should be al list df=[dx,dy,dz]
+        self.df=df#df should be a list df=[dx,dy,dz]
     
     def mul(s,o):
         return xyzderiv(s.f*o.f,[s.f*odf+o.f*sdf for sdf,odf in zip(s.df,o.df)])
