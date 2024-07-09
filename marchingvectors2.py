@@ -60,15 +60,11 @@ iz=inter3d({(0,0,1):1})
 for j in range(1,depth+1):
 
 
-    intervallx,intervally,intervallz=voxels.intervallarethpoints()
-    x,y,z=ix*voxels.delta/2+intervallx.mid(),iy*voxels.delta/2+intervally.mid(),iz*voxels.delta/2+intervallz.mid()
-    
-    #p=point(ix*voxels.delta/2+intervallx.mid(),
-    #        iy*voxels.delta/2+intervally.mid(),
-    #        iz*voxels.delta/2+intervallz.mid())
-    p=point(ix*voxels.delta/2+intervallx.mid(),
-            iy*voxels.delta/2+intervally.mid(),
-            iz*voxels.delta/2+intervallz.mid())
+    voxelmidx,voxelmidy,voxelmidz=voxels.voxelmid().T
+
+    p=point(ix*voxels.delta/2+voxelmidx,
+            iy*voxels.delta/2+voxelmidy,
+            iz*voxels.delta/2+voxelmidz)
     #print("p")
     
     #import cProfile, pstats, io
@@ -82,7 +78,7 @@ for j in range(1,depth+1):
     #pstats.Stats(pr).sort_stats('tottime').print_stats(10)
 
    
-    voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst[:]],axis=0)
+    voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst],axis=0)
     voxels.removecells(voxelswithzerro)
     
     

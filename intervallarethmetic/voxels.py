@@ -33,6 +33,8 @@ class Voxels:
     def intervallarethpoints(self):
         tvox=self.voxels.T
         return[intervallareth(axismin,axismax) for axismin,axismax in zip(tvox*self.delta,(tvox+1)*self.delta)]
+    def voxelmid(self):
+        return (self.voxels.T+0.5)*self.delta
     def subdivide(self):
         self.voxels=np.vstack(self.voxels[:,None,:]*2+Voxels.subvox)
         self.delta/=2

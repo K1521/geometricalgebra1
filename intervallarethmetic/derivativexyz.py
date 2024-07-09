@@ -3,6 +3,7 @@ from algebra.algebrabase import SimpleAlgebraBase
 import numpy as np
 
 class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 variables
+    
     def convert(self,x):
         if isinstance(x,xyzderiv):
             return x
@@ -31,6 +32,11 @@ class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 var
     def __abs__(s):
         sgn=np.sign(s.f)
         return xyzderiv(abs(s.f),[sgn*sdf for sdf in s.df])
+
+xyzderiv.d0=xyzderiv(0,[1,0,0])
+xyzderiv.d1=xyzderiv(0,[0,1,0])
+xyzderiv.d2=xyzderiv(0,[0,0,1])
+xyzderiv.d=np.array([xyzderiv.d0,xyzderiv.d1,xyzderiv.d2])
 
 if __name__=="__main__":
     import sympy as sy
