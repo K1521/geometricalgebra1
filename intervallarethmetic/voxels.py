@@ -31,16 +31,19 @@ class Voxels:
         self.delta=delta
         self.voxels=np.array(list(itertools.product((0,-1),repeat=3)))
     def intervallarethpoints(self):
+        #min/max for x,y,z for each cube
         tvox=self.voxels.T
         return[intervallareth(axismin,axismax) for axismin,axismax in zip(tvox*self.delta,(tvox+1)*self.delta)]
     def voxelmid(self):
         return (self.voxels.T+0.5)*self.delta
     def subdivide(self):
+        #subdivides each voxel
         self.voxels=np.vstack(self.voxels[:,None,:]*2+Voxels.subvox)
         self.delta/=2
     def removecells(self,mask):
         self.voxels=self.voxels[mask,:]
     def gridify(self):
+        #makes a pyvista grid from the voxels
         grid = vtk.vtkUnstructuredGrid()
 
         #make voxels
@@ -77,6 +80,29 @@ class Voxels:
         grid.SetCells(vtk.VTK_VOXEL, cells)
 
         return grid
+    def cubecords(self):
+        """
+        intervallx,intervally,intervallz=voxels.intervallarethpoints()
+        c_n0 = (intervallx.min, intervally.min, intervallz.min)#000
+        c_n1 = (intervallx.max, intervally.min, intervallz.min)#100
+        c_n2 = (intervallx.min, intervally.max, intervallz.min)#010
+        c_n3 = (intervallx.max, intervally.max, intervallz.min)#110
+        c_n4 = (intervallx.min, intervally.min, intervallz.max)#001
+        c_n5 = (intervallx.max, intervally.min, intervallz.max)#101
+        c_n6 = (intervallx.min, intervally.max, intervallz.max)#011
+        c_n7 = (intervallx.max, intervally.max, intervallz.max)#111
+
+        #combined_array=np.stack((c_n0, c_n1, c_n2, c_n3, c_n4, c_n5, c_n6, c_n7), axis=0)
+        combined_array=np.stack((c_n0, c_n4, c_n6, c_n2, c_n3, c_n7, c_n5, c_n1), axis=0)
+        combined_array=np.transpose(combined_array, (2, 0, 1))
+        return combined_array"""
+        return (self.voxels[:,None,:]+Voxels.subvox)*self.delta
+        #allpoints=combined_array.reshape(-1, 3)
+    def cubemid(self):
+        return self.voxels*self.delta+self.delta/2
+    def cubeidx(self):
+        return np.arange(len(self.voxels)*8).reshape(-1,8)
+
 
 
 #print(Voxels(1).voxels)
