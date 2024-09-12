@@ -258,41 +258,138 @@ def nearbypoints(p):
     nearby=np.array(nearby)
     distances=np.linalg.norm(points[nearby]-p,axis=1)
     s=np.argsort(distances)
-    return distances[s],nearby[s]
+    return zip(distances[s],nearby[s])
 
 
+
+
+
+
+
+import heapq
+
+class Graph:
+    def __init__(self):
+        self.adj_list = {}
+
+    def add_edge(self, u, v, d):
+        # Using a dictionary to avoid double edges and store weights directly
+        if u not in self.adj_list:
+            self.adj_list[u] = {}
+        if v not in self.adj_list:
+            self.adj_list[v] = {}
+        self.adj_list[u][v] = d
+        self.adj_list[v][u] = d  # For undirected graph
+
+    def getnextnodes(self, u):
+        import heapq
+        heap = [(0, u)]
+        visited = set()
+        while heap:
+            d, v = heapq.heappop(heap)
+            if v in visited:
+                continue
+            visited.add(v)
+            yield d,v
+            for n, dvn in self.adj_list[v].items():
+                if n not in visited:
+                    heapq.heappush(heap, (d + dvn, n))
+
+    def __contains__(self, n):
+        return n in self.adj_list
+
+    def getedges(self, onlyonedirection=False):
+        edges = []
+        visited = set()
+
+        for u, adj in self.adj_list.items():
+            for v, d in adj.items():
+                if onlyonedirection:
+                    if (v, u) not in visited:
+                        edges.append((u, v, d))
+                        visited.add((u, v))
+                else:
+                    edges.append((u, v, d))
+
+        return edges
+
+    def has_edge(self, u, v):
+        """Check if there is an edge between nodes u and v."""
+        return u in self.adj_list and v in self.adj_list[u]
+
+    
+                
 
 
 
 # Start from the first point
 start_index = 123
-ordered_points = [points[start_index]]
-visited = set([start_index])
+# ordered_points = [points[start_index]]
+# visited = set([start_index])
 
-current_index = start_index
-while True:
-    distances, indices = nearbypoints(points[current_index])
-    for i in range(1, len(indices)):
-        if indices[i] not in visited:
-            next_index = indices[i]
-            break
-    else:
-        break
-    if next_index == start_index:  # Check if we have looped back to the start
-        break
-    ordered_points.append(points[next_index])
-    visited.add(next_index)
-    current_index = next_index
-    #print(next_index)
+# current_index = start_index
+# while True:
+#     distances, indices = nearbypoints(points[current_index])
+#     for i in range(1, len(indices)):
+#         if indices[i] not in visited:
+#             next_index = indices[i]
+#             break
+#     else:
+#         break
+#     if next_index == start_index:  # Check if we have looped back to the start
+#         break
+#     ordered_points.append(points[next_index])
+#     visited.add(next_index)
+#     current_index = next_index
+#     #print(next_index)
+
+polydata = pv.PolyData(points)
+polydata.lines = np.array([(2,u,v) for u,v,d in g.getedges(True)])
+from collections import Counter
+print(Counter(map(len,g.adj_list.values())))
+print([(n,len(x)) for n,x in g.adj_list.items() if len(x)!=2])
+plt.add_mesh(polydata, line_width=1)
+
+g=Graph()
+potential_connections=[(d,n,start_index) for d,n in nearbypoints(points[start_index]) if n!=start_index]
+heapq.heapify(potential_connections)
+visited=set()
+
+while potential_connections:
+
+    dist,nodevisited,nodenew=heapq.heappop(potential_connections)
+    #print(dist,nodevisited,nodenew)
+
+    if nodenew in g:
+        nodeinproximity=False
+        for distingraph,graphnode in g.getnextnodes(nodenew):#walk through the graph to check if there is a close connection to nodevisited
+            if distingraph>5*dist:
+                break
+            if graphnode==nodevisited:
+                nodeinproximity=True
+                break
+            
+        if nodeinproximity:
+            continue
+    
+    g.add_edge(nodevisited,nodenew,dist)
+    print(nodevisited,nodenew)
+    #print(g.adj_list)
+
+    # TODO add new potentuial connections
+    for d,n in nearbypoints(points[nodenew]):
+        if n==nodenew or g.has_edge(nodenew,n):
+            continue
+        heapq.heappush(potential_connections,(d,nodenew,n))
 
 
 
-ordered_points = np.array(ordered_points)
-#plt.add_points(ordered_points, color='orange', point_size=10, label='Ordered Points')
-line = pv.Spline(ordered_points, 1000)
-plt.add_mesh(line, color='green', line_width=3, label='Fitted Curve')
-plt.add_points(ordered_points[[0,-1]], color='orange', point_size=10, label='Ordered Points')
-
+highlighted_points = points[[127]]
+highlighted_point_cloud = pv.PolyData(highlighted_points)
+plt.add_mesh(highlighted_point_cloud, color='red', point_size=5, render_points_as_spheres=True)
+highlighted_points = points[[123]]
+highlighted_point_cloud = pv.PolyData(highlighted_points)
+plt.add_mesh(highlighted_point_cloud, color='orange', point_size=5, render_points_as_spheres=True)
 plt.show()
 
 """ids=np.arange(len(vertices)).reshape((-1, 3))
@@ -306,6 +403,7 @@ mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
 plt.add_mesh(mesh,opacity=0.5,show_edges=0,)
 plt.show()"""
 
+#[{123: 0.0009568563582173311}, {127: 0.0009568563582173311, 124: 0.005914018933245974, 131: 0.005974652613408568}]
 
 
-
+#todo find point from counter

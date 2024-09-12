@@ -233,66 +233,208 @@ plt.add_arrows(smallpoints, update-smallpoints, mag=1)
 plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,)
 
 
-from scipy.spatial import KDTree
-
 points=update
-tree = KDTree(points)
 
-bucketsize=voxels.delta
-def getbucket(vector):
-    return np.floor(vector / bucketsize).astype(int)
-buckets={tuple(b):i for i,b in enumerate(getbucket(points))}
+import heapq
+
+class BucketGrid:
+    def __init__(self, points, bucketsize):
+        """
+        Initialize the BucketGrid with a set of 3D points and voxel parameters.
+
+        :param points: nx3 array representing the points in 3D space
+        :bucketsize: attribute defining the bucket size
+        """
+        self.points = points
+        self.bucketsize = bucketsize
+        self.buckets = self._create_buckets()
+
+    def _get_bucket(self, vector):
+        """
+        Get the grid bucket for a given vector.
+
+        :param vector: 3D vector
+        :return: Tuple representing the bucket the vector belongs to
+        """
+        return np.floor(vector / self.bucketsize).astype(int)
+
+    def _create_buckets(self):
+        """
+        Create the bucket dictionary that maps voxel grids to point indices.
+
+        :return: Dictionary where keys are bucket coordinates and values are lists of point indices
+        """
+        buckets = {}
+        for i, b in enumerate(self._get_bucket(self.points)):
+            buckets.setdefault(tuple(b), []).append(i)
+        return buckets
+
+    def nearby_points(self, p):
+        """
+        Find nearby points to a given point p within adjacent voxel grid cells.
+
+        :param p: 3D point to search around
+        :return: List of tuples (distance, index) sorted by distance
+        """
+        a, b, c = self._get_bucket(p)
+        nearby = []
+        
+        # Check all neighboring buckets
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                for k in range(-1, 2):
+                    key = (a + i, b + j, c + k)
+                    idx = self.buckets.get(key, [])
+                    nearby.extend(idx)
+
+        nearby = np.array(nearby)
+        
+        # Compute distances and sort
+        distances = np.linalg.norm(self.points[nearby] - p, axis=1)
+        sorted_indices = np.argsort(distances)
+        
+        return zip(distances[sorted_indices], nearby[sorted_indices])
+
+buckets=BucketGrid(points,voxels.delta)
 
 
+class Graph:
+    def __init__(self):
+        self.adj_list = {}
 
-def nearbypoints(p):
-    a,b,c=getbucket(p)
-    nearby=[]  
-    for i in range(-1,2):
-        for j in range(-1,2):
-            for k in range(-1,2):
-                key=(a+i,b+j,c+k)
-                idx=buckets.get(key,None)
-                if idx is not None:
-                    nearby.append(idx)
-    nearby=np.array(nearby)
-    distances=np.linalg.norm(points[nearby]-p,axis=1)
-    s=np.argsort(distances)
-    return distances[s],nearby[s]
+    def add_edge(self, u, v, d):
+        # Using a dictionary to avoid double edges and store weights directly
+        if u not in self.adj_list:
+            self.adj_list[u] = {}
+        if v not in self.adj_list:
+            self.adj_list[v] = {}
+        self.adj_list[u][v] = d
+        self.adj_list[v][u] = d  # For undirected graph
 
+    def getnextnodes(self, u):
+        
+        heap = [(0, u)]
+        visited = set()
+        while heap:
+            d, v = heapq.heappop(heap)
+            if v in visited:
+                continue
+            visited.add(v)
+            yield d,v
+            for n, dvn in self.adj_list[v].items():
+                if n not in visited:
+                    heapq.heappush(heap, (d + dvn, n))
 
+    def __contains__(self, n):
+        return n in self.adj_list
+
+    def getedges(self, onlyonedirection=False):
+        edges = []
+        visited = set()
+
+        for u, adj in self.adj_list.items():
+            for v, d in adj.items():
+                if onlyonedirection:
+                    if (v, u) not in visited:
+                        edges.append((u, v, d))
+                        visited.add((u, v))
+                else:
+                    edges.append((u, v, d))
+
+        return edges
+
+    def has_edge(self, u, v):
+        """Check if there is an edge between nodes u and v."""
+        return u in self.adj_list and v in self.adj_list[u]
+
+    
+                
 
 
 
 # Start from the first point
 start_index = 123
-ordered_points = [points[start_index]]
-visited = set([start_index])
+# ordered_points = [points[start_index]]
+# visited = set([start_index])
 
-current_index = start_index
-while True:
-    distances, indices = nearbypoints(points[current_index])
-    for i in range(1, len(indices)):
-        if indices[i] not in visited:
-            next_index = indices[i]
-            break
-    else:
-        break
-    if next_index == start_index:  # Check if we have looped back to the start
-        break
-    ordered_points.append(points[next_index])
-    visited.add(next_index)
-    current_index = next_index
-    #print(next_index)
+# current_index = start_index
+# while True:
+#     distances, indices = nearbypoints(points[current_index])
+#     for i in range(1, len(indices)):
+#         if indices[i] not in visited:
+#             next_index = indices[i]
+#             break
+#     else:
+#         break
+#     if next_index == start_index:  # Check if we have looped back to the start
+#         break
+#     ordered_points.append(points[next_index])
+#     visited.add(next_index)
+#     current_index = next_index
+#     #print(next_index)
 
 
 
-ordered_points = np.array(ordered_points)
-#plt.add_points(ordered_points, color='orange', point_size=10, label='Ordered Points')
-line = pv.Spline(ordered_points, 1000)
-plt.add_mesh(line, color='green', line_width=3, label='Fitted Curve')
-plt.add_points(ordered_points[[0,-1]], color='orange', point_size=10, label='Ordered Points')
+g=Graph()
+notvisited=set(range(len(points)))
 
+while notvisited:
+    start_index=notvisited.pop()
+    potential_connections=[(d,start_index,n) for d,n in buckets.nearby_points(points[start_index]) if n!=start_index]
+    heapq.heapify(potential_connections)
+    #notvisited.discard(start_index)
+
+
+    while potential_connections:
+
+        dist,nodevisited,nodenew=heapq.heappop(potential_connections)
+        #print(dist,nodevisited,nodenew)
+
+        if nodenew in g:
+            nodeinproximity=False
+            for distingraph,graphnode in g.getnextnodes(nodenew):#walk through the graph to check if there is a close connection to nodevisited
+                if distingraph>5*dist:
+                    break
+                if graphnode==nodevisited:
+                    nodeinproximity=True
+                    break
+                
+            if nodeinproximity:
+                continue
+        notvisited.discard(nodenew)
+        g.add_edge(nodevisited,nodenew,dist)
+        print(nodevisited,nodenew)
+        #print(g.adj_list)
+
+        # TODO add new potentuial connections
+        for d,n in buckets.nearby_points(points[nodenew]):
+            if n==nodenew or g.has_edge(nodenew,n):
+                continue
+            heapq.heappush(potential_connections,(d,nodenew,n))
+
+
+#print(np.array([(2,u,v) for u,v,d in g.getedges(True)]))
+#print(g.adj_list)
+polydata = pv.PolyData(points)
+polydata.lines = np.array([(2,u,v) for u,v,d in g.getedges(True)])
+from collections import Counter
+print(Counter(map(len,g.adj_list.values())))
+print([(n,len(x)) for n,x in g.adj_list.items() if len(x)!=2])
+plt.add_mesh(polydata, line_width=1)
+# ordered_points = np.array(ordered_points)
+# #plt.add_points(ordered_points, color='orange', point_size=10, label='Ordered Points')
+# line = pv.Spline(ordered_points, 1000)
+# plt.add_mesh(line, color='green', line_width=3, label='Fitted Curve')
+# plt.add_points(ordered_points[[0,-1]], color='orange', point_size=10, label='Ordered Points')
+
+
+
+highlighted_points = points[[n for n,x in g.adj_list.items() if len(x)==3]]
+highlighted_point_cloud = pv.PolyData(highlighted_points)
+plt.add_mesh(highlighted_point_cloud, color='red', point_size=5, render_points_as_spheres=True)
+highlighted_points = points[[n for n,x in g.adj_list.items() if len(x)==1]]
+highlighted_point_cloud = pv.PolyData(highlighted_points)
+plt.add_mesh(highlighted_point_cloud, color='orange', point_size=5, render_points_as_spheres=True)
 plt.show()
 
 """ids=np.arange(len(vertices)).reshape((-1, 3))
@@ -306,6 +448,7 @@ mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
 plt.add_mesh(mesh,opacity=0.5,show_edges=0,)
 plt.show()"""
 
+#[{123: 0.0009568563582173311}, {127: 0.0009568563582173311, 124: 0.005914018933245974, 131: 0.005974652613408568}]
 
 
-
+#todo find point from counter
