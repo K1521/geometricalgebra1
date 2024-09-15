@@ -403,7 +403,7 @@ while notvisited:
                 continue
         notvisited.discard(nodenew)
         g.add_edge(nodevisited,nodenew,dist)
-        print(nodevisited,nodenew)
+        #print(nodevisited,nodenew)
         #print(g.adj_list)
 
         # TODO add new potentuial connections
