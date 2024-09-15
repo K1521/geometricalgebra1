@@ -14,12 +14,15 @@ class Graph:
         self.adj_list[u][v] = d
         self.adj_list[v][u] = d  # For undirected graph
 
-    def getnextnodes(self, u):
-        
+    def getnextnodes(self, u,maxdist=float("inf")):
+        if u not in self:
+            return
         heap = [(0, u)]
         visited = set()
         while heap:
             d, v = heapq.heappop(heap)
+            if d>maxdist:
+                break
             if v in visited:
                 continue
             visited.add(v)
@@ -72,9 +75,7 @@ def pointstocurve(points,bucketsize,distfactor=3):
 
             if nodenew in g:
                 nodeinproximity=False
-                for distingraph,graphnode in g.getnextnodes(nodenew):#walk through the graph to check if there is a close connection to nodevisited
-                    if distingraph>distfactor*dist:
-                        break
+                for distingraph,graphnode in g.getnextnodes(nodenew,maxdist=distfactor*dist):#walk through the graph to check if there is a close connection to nodevisited
                     if graphnode==nodevisited:
                         nodeinproximity=True
                         break
@@ -95,22 +96,56 @@ def pointstocurve(points,bucketsize,distfactor=3):
     return g
 
                 
-def pointstocurvesimple(points,bucketsize):
+def pointstocurvesimple(points,bucketsize,distfactor=3):
 
     buckets=BucketGrid(points,bucketsize,merge_close_points=True)
     g=Graph()
     notvisited=set(buckets.getallidxs())
+    endpoints=set()
 
     while notvisited:
         act_index=notvisited.pop()
+        endpoints.add(act_index)
 
         while True:
-            for d,newindex in buckets.nearby_points(points[act_index]):#search closest point
+            nearby=list(buckets.nearby_points(points[act_index]))
+            for d,newindex in nearby:#search closest point
                 if newindex in notvisited:
                     g.add_edge(newindex,act_index,d)
                     notvisited.discard(newindex)
                     act_index=newindex
                     break
             else:
+                endpoints.add(act_index)
                 break
+    #return g
+    while endpoints:#for loop closure
+        act_index=endpoints.pop()
+        
+        
+        nearby=list(buckets.nearby_points(points[act_index]))
+        print(act_index,nearby)
+        graphneighbours={graphnode for distingraph,graphnode in g.getnextnodes(act_index,maxdist=distfactor*nearby[-1][0])}
+
+        
+        for d,newindex in nearby:#search closest point
+            if newindex not in graphneighbours:
+                g.add_edge(newindex,act_index,d)
+                #recompute graphneighbours
+                graphneighbours={graphnode for distingraph,graphnode in g.getnextnodes(act_index,maxdist=distfactor*nearby[-1][0])}
+
+        # for d,newindex in nearby:#search closest point
+        #     if newindex in endpoints:
+        #         g.add_edge(newindex,act_index,d)
+
+        #if we dont add any edge:
+        #endpoint or intersection
+        #I dont really know what to do here.
+        #In case of endpoint i dont have to do anything
+        #in case of self intersection i would need to add a connection
+        #I could check dist in graph
+
+
+
+
     return g

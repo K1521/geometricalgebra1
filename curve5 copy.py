@@ -18,7 +18,7 @@ t=toroid(1,.5)
 p=Plane(0.1,0.1,0.1,0)
 p=Plane(0.1,0,0.1732,0)
 t=toroid(1,.5)
-p=Plane(0.1,0.1,0.1,0.5)
+p=Plane(0.1,0.1,0.1,0)
 vis=t^p#^Plane(0.1,0.1,0.001,0.5)#^Plane(0.001,0.001,0.1,0.1)
 #vis=Plane(0.1,0.1,0.2,0.5)
 #vis=point(0.5,0.7,0.3)
@@ -144,7 +144,7 @@ depth=0
 depth2=16
 maxvoxelnum=5000
 
-voxels=Voxels(1)
+voxels=Voxels(64)
 #intervallx,intervally,intervallz=intervallx+17.1225253,intervally+13.127876,intervallz+32.135670
 zerrovec=np.zeros(3)
 
@@ -218,8 +218,8 @@ startpoints=update=voxels.cubemid()
 for i in range(8):
     update=newtoniteration(update,vis)#2 newton iters
 
-plt.add_arrows(startpoints, update-startpoints, mag=1,pickable=False)
-plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,pickable=False)
+#plt.add_arrows(startpoints, update-startpoints, mag=1,pickable=False)
+#plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,pickable=False)
 
 
 
@@ -254,8 +254,8 @@ print([(n,len(x)) for n,x in g.adj_list.items() if len(x)!=2])
 
 from curveviz.bucket_grid import BucketGrid
 buckets=BucketGrid(points,voxels.delta,merge_close_points=True)
-polydata = pv.PolyData(points)
-plt.add_mesh(polydata, line_width=5)
+#polydata = pv.PolyData(points)
+#plt.add_mesh(polydata, line_width=5)
 
 
 
@@ -271,10 +271,12 @@ class Picker:
         #print(idx)
         #print(mesh.points[idx])
         self.plotter.set_focus(picker.GetDataSet().points[picker.GetPointId()])
+        neighbourpoints=[n for d,n in buckets.nearby_points(points[picker.GetPointId()])]
 
         highlighted_point_cloud = pv.PolyData(points[
-            [n for d,n in buckets.nearby_points(points[picker.GetPointId()])]
+            neighbourpoints
             ])
+        print(picker.GetPointId(),neighbourpoints )
         self.highlited=plt.add_mesh(highlighted_point_cloud, color='orange', point_size=5, render_points_as_spheres=True)
 
 plt.enable_point_picking(Picker(plt), picker='point',use_picker=True,show_message=False)
