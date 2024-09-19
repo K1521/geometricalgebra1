@@ -27,6 +27,8 @@ vis=t^p#^Plane(0.1,0.1,0.001,0.5)#^Plane(0.001,0.001,0.1,0.1)
 print(p)
 
 
+f=lambda x,y,z:vis.inner(point(x,y,z))
+
 plt=myplotter.mkplotter()
 t0=time.time() 
 step=101
@@ -42,15 +44,16 @@ from intervallarethmetic.intervallarethmetic1 import intervallareth
 from intervallarethmetic.voxels import Voxels
 t0=time.time()
 
-def uniquepoints(allpoints):
-    #reduce to unique to reduce redundant computation
-    uniquepoints, rindices = np.unique(allpoints, return_inverse=True,axis=0)
-    return uniquepoints, rindices
+
 
 def calcderiv(allpoints,vis):
     #calculate the derivative of point(x,y,z).inner(vis) with respect to x,y,z
-    xtf,ytf,ztf=(xyzderiv(var,d)for var,d in zip(allpoints.T,[[1,0,0],[0,1,0],[0,0,1]]))
-    iprod=point(xtf,ytf,ztf).inner(vis)
+    #xtf,ytf,ztf=(xyzderiv(var,d)for var,d in zip(allpoints.T,[[1,0,0],[0,1,0],[0,0,1]]))
+    xtf=xyzderiv.idx(allpoints[:,0])
+    ytf=xyzderiv.idy(allpoints[:,1])
+    ztf=xyzderiv.idz(allpoints[:,2])
+
+    iprod=vis(xtf,ytf,ztf)#point(xtf,ytf,ztf).inner(vis)
     #print(f"{len(iprod.lst)=}")
     #voltf=sum(abs(blade.magnitude) for blade in iprod.lst)
     #voltf=sum(abs(blade.magnitude) for blade in iprod.lst)
@@ -73,20 +76,23 @@ def normalize(vecs):
 
 
 
-def remove_mask_empty_voxels_by_alignement(cubeidx, rindices, magnitudes, derivs):
+def remove_mask_empty_voxels_by_alignement( rindices, magnitudes, derivs):
     #returns a mask wich is used to remove empty voxels
     #a voxel is considered empty if all of the derivatives point in the same direction
 
-    idx=np.arange(len(cubeidx))
+    keepidx=np.arange(len(rindices))
+
     for deriv,magnitude in zip(derivs,magnitudes):
-        #print( "deriv,magnitude" )
+        
         deriv=normalize(deriv)*np.sign(magnitude)[...,None]
-        vecs=deriv[rindices[cubeidx[idx]]]  #vecs[cube,point in cube (8),deriv (3)]
-        upperleft=normalize(vecs[:,0,None,:])
+        #vecs=deriv[rindices[cubeidx[idx]]]  #vecs[cube,point in cube (8),deriv (3)]
+        vecs=deriv[rindices[keepidx]]
+
+        upperleft=vecs[:,0,None,:]#normalize(vecs[:,0,None,:])
         #upperleft=normalize(np.sum(vecs,axis=1,keepdims=True))
         dotprod=np.all(np.sum(upperleft*vecs,axis=-1)>0.7,axis=-1)#for every cube all(dotproduct>0)# edit >cos(45)
         #alle >0 d.h. ungefähr eine richtung
-        idx=idx[~dotprod]
+        keepidx=keepidx[~dotprod]
         #print((~dotprod).sum(),(dotprod).sum())
 
 
@@ -102,7 +108,7 @@ def remove_mask_empty_voxels_by_alignement(cubeidx, rindices, magnitudes, derivs
         plt.grid(True)
         plt.show()
         break"""
-    return idx
+    return keepidx
     
 
 def newtoniteration(startpoints,vis):
@@ -154,16 +160,16 @@ for j in range(1,depth+1):
 
     x,y,z=voxels.cubemid().T
     
-    p=point(ix*voxels.delta/2+x,
-            iy*voxels.delta/2+y,
-            iz*voxels.delta/2+z)
+
     #print("p")
     
     #import cProfile, pstats, io
     #from pstats import SortKey
     #pr = cProfile.Profile(builtins=False)
     #pr.enable()
-    expr=p.inner(vis)
+    expr=f(ix*voxels.delta/2+x,
+            iy*voxels.delta/2+y,
+            iz*voxels.delta/2+z)
     
     #plt.add_mesh(voxels.gridify(),opacity=0.5)
     #pr.disable()
@@ -188,7 +194,7 @@ for j in range(depth+1,depth2+1):
     smallpoints=update=voxels.cubemid()
     for i in range(4):
         old=update
-        update=newtoniteration(update,vis)#2 newton iters
+        update=newtoniteration(update,f)#2 newton iters
         #plt.add_arrows(old, update-old, mag=1)
     #plt.add_arrows(smallpoints, update-smallpoints, mag=1)
     voxels.removecells(np.linalg.norm(update-smallpoints,axis=1)<3**.5*voxels.delta)
@@ -201,18 +207,20 @@ for j in range(depth+1,depth2+1):
 
 
 
-cubepoints=voxels.cubecords() #remove_mask_empty_voxels_by_alignement
-allpoints=cubepoints.reshape(-1,3)
-cubeidx=voxels.cubeidx()
-smallpoints, rindices = uniquepoints(allpoints)
-magnitudes,derivs=calcderiv(smallpoints,vis)
-voxels.removecells(remove_mask_empty_voxels_by_alignement(cubeidx, rindices, magnitudes, derivs))
+# cubepoints=voxels.cubecords() #remove_mask_empty_voxels_by_alignement
+# allpoints=cubepoints.reshape(-1,3)
+# cubeidx=voxels.cubeidx()
+# smallpoints, rindices = uniquepoints(allpoints)
+# magnitudes,derivs=calcderiv(smallpoints,vis)
+verticesunique,rindices=voxels.cubecordsunique()
+magnitudes,derivs=calcderiv(verticesunique,f)
+voxels.removecells(remove_mask_empty_voxels_by_alignement( rindices, magnitudes, derivs))
 
 
 
 startpoints=update=voxels.cubemid()
 for i in range(8):
-    update=newtoniteration(update,vis)#2 newton iters
+    update=newtoniteration(update,f)#2 newton iters
 
 #plt.add_arrows(startpoints, update-startpoints, mag=1)
 #plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,)

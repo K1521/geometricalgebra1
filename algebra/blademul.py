@@ -137,7 +137,8 @@ class algebra:
             return bladeo
         else:
             return blade(bladeo.basis,-bladeo.magnitude)
-    
+
+
 
 class sortgeo:
     #@staticmethod
@@ -175,7 +176,7 @@ class sortgeo:
     def __str__(self) -> str:
         if not self.lst:
             return self.algebra.bladestr(self.algebra.zero)
-        return "+".join(self.algebra.bladestr(b) for b in sorted(self.lst,key=self.algebra.bladesortkey))
+        return " + ".join(self.algebra.bladestr(b) for b in sorted(self.lst,key=self.algebra.bladesortkey))
     
     def __repr__(self):
         return self.__str__()
@@ -208,7 +209,10 @@ class sortgeo:
 
         lstnew=[]
         for k,g in itertools.groupby(bladelst,key=getblades):
-            b=blade(k,sum(x.magnitude for x in g))
+            #g=list(g.magnitude)
+            #s=
+            b=blade(k,sum(x.magnitude for x in g if not self.algebra.iszero(x)))
+            #b=blade(k,sum(x.magnitude for x in g))
             if not self.algebra.iszero(b):
                 lstnew.append(b)
 
