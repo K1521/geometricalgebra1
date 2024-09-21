@@ -1,4 +1,6 @@
-from intervallareth.intervallarethmetic1 import intervallareth
+import sys
+sys.path.append('C:/Users/Konstantin/data/programme/pythonrepo/geometricalgebra1/')
+from intervallarethmetic.intervallarethmetic1 import intervallareth
 
 import sympy
 import numpy as np

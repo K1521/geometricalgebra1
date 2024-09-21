@@ -143,7 +143,7 @@ for j in range(1,depth+1):
 
     #TODO wenn ableitung sum(abs(evaluatefun(e,cache)) for e in equations).containsnum() nach x,y,z contains 0,0,0 
     print(voxelswithzerro)
-    voxels.removecells(voxelswithzerro)
+    voxels.filter_cells(voxelswithzerro)
     
     """if len(intervallx.min)>10000 or 1:
         

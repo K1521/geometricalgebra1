@@ -1,7 +1,6 @@
 import numpy as np
 import itertools
-from vtk.util import numpy_support as nps
-import vtk
+
 from intervallarethmetic.intervallarethmetic1 import intervallareth
 
 def uniquereplacement(points):
@@ -30,37 +29,26 @@ class Voxels:
     def __init__(self,delta):
         self.delta=delta
         self.voxels=Voxels.subvox-1#np.array(list(itertools.product((0,-1),repeat=3)))
+    def __len__(self):
+        return len(self.voxels)
     def intervallarethpoints(self):
-        #min/max for x,y,z for each cube
+        """min/max for x,y,z for each cube"""
         tvox=self.voxels.T
         return[intervallareth(axismin,axismax) for axismin,axismax in zip(tvox*self.delta,(tvox+1)*self.delta)]
     def subdivide(self):
-        #subdivides each voxel
+        """subdivides each voxel in 8 smaller voxels"""
         self.voxels=np.vstack(self.voxels[:,None,:]*2+Voxels.subvox)
         self.delta/=2
-    def removecells(self,mask):
+    def filter_cells(self,mask):
+        """removes cells for which the mask is False"""
         self.voxels=self.voxels[mask,:]
     def gridify(self):
-        #makes a pyvista grid from the voxels
+        """makes a pyvista grid from the voxels"""
+
+        import vtk
+        from vtk.util import numpy_support as nps
+        
         grid = vtk.vtkUnstructuredGrid()
-
-        #make voxels
-        #self.voxels only contains the lower left rear point of the voxel
-        #all_points contains all voxel points
-        #this works because subvox has different dimensions than voxels
-        #all_points=np.vstack(self.voxels[:,None,:]+Voxels.subvox)
-
-        # all_points=(self.voxels[:,None,:]+Voxels.subvox).reshape(-1,3)
-        
-
-        # n_cells=len(self.voxels)
-
-        # #remove duplicates
-        # points, ind_nodes = np.unique(all_points , return_inverse=True, axis=0)
-        # #points, ind_nodes =uniquereplacement(all_points)
-        
-        # #scale to cordinates
-        # points=points*self.delta
 
         n_cells=len(self.voxels)
         points,ids=self.cubecordsunique()
@@ -70,16 +58,9 @@ class Voxels:
         grid.SetPoints(pts)
 
         cells = vtk.vtkCellArray()
-        #insert 8 every 8th index because a voxel has 8 points
-        #ids=ind_nodes.reshape((n_cells, 8))
-        # cells_mat = np.concatenate(
-        #     (np.full((n_cells, 1),8) , ids), axis=1
-        # ).ravel()
-
         cells_mat = np.hstack(
             (np.full((n_cells, 1),8) , ids)
         ).ravel()
-
         cells.SetNumberOfCells(n_cells)
         cells.SetCells(
             n_cells, nps.numpy_to_vtk(cells_mat, array_type=vtk.VTK_ID_TYPE)#deep=True,)
@@ -112,20 +93,7 @@ class Voxels:
         cordinate of the vertices of each voxel
         returns a nx8x3 array
         """
-        # intervallx,intervally,intervallz=voxels.intervallarethpoints()
-        # c_n0 = (intervallx.min, intervally.min, intervallz.min)#000
-        # c_n1 = (intervallx.max, intervally.min, intervallz.min)#100
-        # c_n2 = (intervallx.min, intervally.max, intervallz.min)#010
-        # c_n3 = (intervallx.max, intervally.max, intervallz.min)#110
-        # c_n4 = (intervallx.min, intervally.min, intervallz.max)#001
-        # c_n5 = (intervallx.max, intervally.min, intervallz.max)#101
-        # c_n6 = (intervallx.min, intervally.max, intervallz.max)#011
-        # c_n7 = (intervallx.max, intervally.max, intervallz.max)#111
 
-        # #combined_array=np.stack((c_n0, c_n1, c_n2, c_n3, c_n4, c_n5, c_n6, c_n7), axis=0)
-        # combined_array=np.stack((c_n0, c_n4, c_n6, c_n2, c_n3, c_n7, c_n5, c_n1), axis=0)
-        # combined_array=np.transpose(combined_array, (2, 0, 1))
-        # return combined_array
         return (self.voxels[:,None,:]+Voxels.subvox)*self.delta
 
 

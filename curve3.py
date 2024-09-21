@@ -74,7 +74,7 @@ for j in range(1,depth+1):
 
    
     voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst[:]],axis=0)
-    voxels.removecells(voxelswithzerro)
+    voxels.filter_cells(voxelswithzerro)
     
     
     #print(voxelswithzerro)
@@ -180,7 +180,7 @@ def invertmask(index,size):
 
 
 #voxels.removecells(invertmask(remove_mask_empty_voxels_by_alignement(cubeidx, rindices, magnitudes, derivs),len(cubeidx)))
-voxels.removecells(remove_mask_empty_voxels_by_alignement(cubeidx, rindices, magnitudes, derivs))
+voxels.filter_cells(remove_mask_empty_voxels_by_alignement(cubeidx, rindices, magnitudes, derivs))
 
 
 
