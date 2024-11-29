@@ -1,9 +1,12 @@
 import numpy as np
 
 class intervallareth:
-    def __init__(self,min,max) -> None:
+    def __init__(self,min,max=None) -> None:
         self.min=min
-        self.max=max
+        if max is None:
+            self.max=min
+        else:
+            self.max=max
     
     def __str__(self):
         return f"[{self.min},{self.max}]"
@@ -17,7 +20,7 @@ class intervallareth:
         if isinstance(other, np.ndarray):
             combis=[self.min*other,self.max*other]
             return intervallareth(np.min(combis, axis=0),np.max(combis, axis=0))
-        if other==0:return 0
+        #if other==0:return 0 #output arrays could have different shape
         if other==1:return self
         if other==-1:return intervallareth(-self.max,-self.min)
         if other>0:

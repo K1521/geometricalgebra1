@@ -11,7 +11,24 @@ class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 var
 
     def __init__(self,f,df):
         self.f=f
-        self.df=df#df should be a list df=[dx,dy,dz]
+        self.df=df#df should be a list df=[df/dx,df/dy,df/dz]
+
+    @staticmethod
+    def idx(x):
+        """Identity function for x, i.e., df/dx = 1"""
+        return xyzderiv(x, [1, 0, 0])
+
+    @staticmethod
+    def idy(y):
+        """Identity function for y, i.e., df/dy = 1"""
+        return xyzderiv(y, [0, 1, 0])
+
+    @staticmethod
+    def idz(z):
+        """Identity function for z, i.e., df/dz = 1"""
+        return xyzderiv(z, [0, 0, 1])
+    
+    
     
     def mul(s,o):
         return xyzderiv(s.f*o.f,[s.f*odf+o.f*sdf for sdf,odf in zip(s.df,o.df)])
@@ -33,10 +50,7 @@ class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 var
         sgn=np.sign(s.f)
         return xyzderiv(abs(s.f),[sgn*sdf for sdf in s.df])
 
-xyzderiv.d0=xyzderiv(0,[1,0,0])
-xyzderiv.d1=xyzderiv(0,[0,1,0])
-xyzderiv.d2=xyzderiv(0,[0,0,1])
-xyzderiv.d=np.array([xyzderiv.d0,xyzderiv.d1,xyzderiv.d2])
+
 
 if __name__=="__main__":
     import sympy as sy

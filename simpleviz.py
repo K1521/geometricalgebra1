@@ -2,6 +2,18 @@ from algebra.dcga import *
 import pyvista as pv
 import numpy as np
 import time
+
+
+def max_seconds(max_seconds, interval=1):
+    current = start_time = time.time()
+    end_time = start_time + max_seconds
+    while  current<=end_time:
+        yield current-start_time
+        time.sleep(min(end_time-current,interval+time.time()-current))
+        current=time.time()
+    yield current-start_time
+
+
 t=toroid(1,.5)
 p=Plane(0.1,0.1,0.1,0.5)
 vis=p^t
@@ -57,8 +69,11 @@ index = 0
 try:
     while True:
         highlight_mesh(index)
-        plotter.update()
-        time.sleep(1)  # Wait for 1 second
+        
+
+        for s in max_seconds(1,0.01):
+            #print(s)
+            plotter.update()
         index = (index + 1) % len(actors)
         print(index)
 finally:

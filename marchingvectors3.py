@@ -78,8 +78,11 @@ for j in range(1,depth+1):
 
    
     voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst],axis=0)
-    voxels.removecells(voxelswithzerro)
-
+    voxels.filter_cells(voxelswithzerro)
+    
+    
+    #print(voxelswithzerro)
+    #print(expr.lst)
     print(len(voxelswithzerro),j,len(voxelswithzerro)/8**j)
     if len(voxelswithzerro)>maxvoxelnum:
         depth=j

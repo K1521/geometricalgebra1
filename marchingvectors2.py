@@ -78,8 +78,8 @@ for j in range(1,depth+1):
     #pstats.Stats(pr).sort_stats('tottime').print_stats(10)
 
    
-    voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst],axis=0)
-    voxels.removecells(voxelswithzerro)
+    voxelswithzerro=np.all([blade.magnitude.intervallnp().containsnum(0) for blade in expr.lst[:]],axis=0)
+    voxels.filter_cells(voxelswithzerro)
     
     
     #print(voxelswithzerro)

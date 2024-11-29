@@ -10,7 +10,7 @@ dcga=algebra(8,2)
 
 #algebra declaration
 multivec=sortgeo(dcga)
-dcga.bladenames="1,2,3,4,6,7,8,9,5,10".split(",")
+dcga.setbladenames=("1,2,3,4,6,7,8,9,5,10".split(","))
 
 e1,e2,e3,e4,e6,e7,e8,e9,e5,e10=multivec.monoblades()
 
