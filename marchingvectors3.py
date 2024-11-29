@@ -59,7 +59,7 @@ iz=inter3d({(0,0,1):1})
 for j in range(1,depth+1):
 
 
-    voxelmidx,voxelmidy,voxelmidz=voxels.voxelmid().T
+    voxelmidx,voxelmidy,voxelmidz=voxels.voxelmid()
 
     p=point(ix*voxels.delta/2+voxelmidx,
             iy*voxels.delta/2+voxelmidy,
