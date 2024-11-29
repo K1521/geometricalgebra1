@@ -3,7 +3,7 @@ from algebra.algebrabase import SimpleAlgebraBase
 import numpy as np
 
 class xyzderiv(SimpleAlgebraBase):#this class is a auto differentiator for 3 variables
-
+    
     def convert(self,x):
         if isinstance(x,xyzderiv):
             return x

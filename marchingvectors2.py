@@ -60,15 +60,11 @@ iz=inter3d({(0,0,1):1})
 for j in range(1,depth+1):
 
 
-    intervallx,intervally,intervallz=voxels.intervallarethpoints()
-    x,y,z=ix*voxels.delta/2+intervallx.mid(),iy*voxels.delta/2+intervally.mid(),iz*voxels.delta/2+intervallz.mid()
-    
-    #p=point(ix*voxels.delta/2+intervallx.mid(),
-    #        iy*voxels.delta/2+intervally.mid(),
-    #        iz*voxels.delta/2+intervallz.mid())
-    p=point(ix*voxels.delta/2+intervallx.mid(),
-            iy*voxels.delta/2+intervally.mid(),
-            iz*voxels.delta/2+intervallz.mid())
+    voxelmidx,voxelmidy,voxelmidz=voxels.voxelmid()
+
+    p=point(ix*voxels.delta/2+voxelmidx,
+            iy*voxels.delta/2+voxelmidy,
+            iz*voxels.delta/2+voxelmidz)
     #print("p")
     
     #import cProfile, pstats, io

@@ -35,6 +35,8 @@ class Voxels:
         """min/max for x,y,z for each cube"""
         tvox=self.voxels.T
         return[intervallareth(axismin,axismax) for axismin,axismax in zip(tvox*self.delta,(tvox+1)*self.delta)]
+    def voxelmid(self):
+        return (self.voxels.T+0.5)*self.delta
     def subdivide(self):
         """subdivides each voxel in 8 smaller voxels"""
         self.voxels=np.vstack(self.voxels[:,None,:]*2+Voxels.subvox)
