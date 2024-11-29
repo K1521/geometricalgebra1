@@ -1,3 +1,19 @@
+
+
+import sys
+import os
+
+# Get the parent directory of the current file (my_script.py)
+parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+# Add the parent directory to sys.path
+if parent_directory not in sys.path:
+    sys.path.append(parent_directory)
+
+
+
+
+
 from algebra.dcga import *
 #algebra.dcga.mode="numpy"
 import pyvista as pv
@@ -143,7 +159,7 @@ def newtoniteration(startpoints,vis):
     # Perform the Gauss-Newton step
     return startpoints-update
 
-depth=16
+depth=0
 depth2=16
 maxvoxelnum=5000
 
@@ -246,15 +262,15 @@ print(Counter(map(len,g.adj_list.values())))
 print([(n,len(x)) for n,x in g.adj_list.items() if len(x)!=2])
 
 
-# voxels=Voxels(1)#
-# voxels.subdivide()
-# startpoints=update=voxels.cubemid()
-# for i in range(8):
-#     old=update
-#     update=newtoniteration(update,vis)#2 newton iters
-#     plt.add_arrows(old, update-old, mag=1)
-# voxels.removecells(np.linalg.norm(update-startpoints,axis=1)<3**.5*voxels.delta)
-# plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,)
+voxels=Voxels(1)#
+voxels.subdivide()
+startpoints=update=voxels.cubemid()
+for i in range(8):
+    old=update
+    update=newtoniteration(update,f)#2 newton iters
+    plt.add_arrows(old, update-old, mag=1)
+voxels.filter_cells(np.linalg.norm(update-startpoints,axis=1)<3**.5*voxels.delta)
+plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,)
 
 
 # highlighted_points = points[[n for n,x in g.adj_list.items() if len(x)==3]]

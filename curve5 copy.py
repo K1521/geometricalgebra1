@@ -226,7 +226,7 @@ for i in range(8):
 
 points=update
 from curveviz.pointstocurve import pointstocurvesimple
-g=pointstocurvesimple(points,bucketsize=voxels.delta)
+g=pointstocurvesimple(points,bucketsize=voxels.delta,loopclosure=False)
 
 
 

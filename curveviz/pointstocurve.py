@@ -96,7 +96,7 @@ def pointstocurve(points,bucketsize,distfactor=3):
     return g
 
                 
-def pointstocurvesimple(points,bucketsize,distfactor=3):
+def pointstocurvesimple(points,bucketsize,distfactor=3,loopclosure=True):
 
     buckets=BucketGrid(points,bucketsize,merge_close_points=True)
     g=Graph()
@@ -118,7 +118,9 @@ def pointstocurvesimple(points,bucketsize,distfactor=3):
             else:
                 endpoints.add(act_index)
                 break
-    #return g
+    if not loopclosure:
+        return g
+    
     while endpoints:#for loop closure
         act_index=endpoints.pop()
         

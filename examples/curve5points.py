@@ -1,3 +1,19 @@
+
+
+import sys
+import os
+
+# Get the parent directory of the current file (my_script.py)
+parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+# Add the parent directory to sys.path
+if parent_directory not in sys.path:
+    sys.path.append(parent_directory)
+
+
+
+
+
 from algebra.dcga import *
 #algebra.dcga.mode="numpy"
 import pyvista as pv
@@ -236,8 +252,8 @@ g=pointstocurve(points,bucketsize=voxels.delta)
 
 
 
-polydata = pv.PolyData(points,lines=np.array([(2,u,v) for u,v,d in g.getedges(True)]))
-plt.add_mesh(polydata, line_width=5)
+polydata = pv.PolyData(points)#,lines=np.array([(2,u,v) for u,v,d in g.getedges(True)]))
+plt.add_mesh(polydata)#, line_width=5)
 
 
 

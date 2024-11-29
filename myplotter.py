@@ -12,8 +12,9 @@ class Picker:
         #print(idx)
         
 
-def mkplotter():
-    pv.set_plot_theme('dark')
+def mkplotter(dark=True):
+    if dark:
+        pv.set_plot_theme('dark')
     plt = pv.Plotter()
     plt.add_axes()
     plt.show_grid()
