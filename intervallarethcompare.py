@@ -6,10 +6,11 @@ from matplotlib import pyplot as plt
 
 
 
-f=lambda x:x*x
-f=lambda x:2*x**3-5*x+3*x-7
-f=lambda x:2*(x+3)**2-x*x
+#f=lambda x:x*x
+#f=lambda x:(2*x**3-5*x+3*x-7)*x
+#f=lambda x:2*(x+3)**2-x*x
 f=lambda x:x*x-x*x
+#f=lambda x:(x*x-1)*x-(x*x+1)*x
 x=np.linspace(-10,10,100)
 fx=f(x)
 
@@ -26,7 +27,8 @@ ix=intervallareth(x)
 
 # plt.plot(x,y.min,color='blue',linewidth=4)
 # plt.plot(x,y.max,color='blue',linewidth=4)
-
+#plt.plot(x,fx,color='black')
+fx=0
 
 y=f(I+x)
 
@@ -36,19 +38,19 @@ plt.plot(x,y.max-fx,color='black')
 
 
 
-expr=f(poly3d.ix)
-y=expr.intervallnp(x=x,delta=1)
-print(expr)
-plt.plot(x,y.min-fx,color='orange')
-plt.plot(x,y.max-fx,color='orange')
+# expr=f(poly3d.ix)
+# y=expr.intervallnp(x=x,delta=1)
+# print(expr)
+# plt.plot(x,y.min-fx,color='orange')
+# plt.plot(x,y.max-fx,color='orange')
 
 
 
 
-expr=f(inter3d.ix*1+x)
-y=expr.intervallnp()
-plt.plot(x,y.min-fx,color='green')
-plt.plot(x,y.max-fx,color='green')
+# expr=f(inter3d.ix*1+x)
+# y=expr.intervallnp()
+# plt.plot(x,y.min-fx,color='green')
+# plt.plot(x,y.max-fx,color='green')
 
 plt.show()
 

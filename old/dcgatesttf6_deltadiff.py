@@ -185,7 +185,7 @@ for i in range(step-1):
 #print(np.array(faces).ravel())
 #print(np.array(faces).ravel())
 #print(np.array(vertices).ravel())
-mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
+mesh=pv.PolyData(np.array(vertices).ravel().reshape(-1,3), strips=np.array(faces).ravel())
 #print(vertices)
 p.add_mesh(mesh,opacity=0.5,show_edges=0,)
 

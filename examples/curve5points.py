@@ -77,6 +77,22 @@ def calcderiv(allpoints,vis):
     magnitude=[blade.magnitude.f for blade in iprod.lst]
     return magnitude,delta
 
+def calcderivsus(allpoints,vis):
+    """calculate the derivative of vis(x,y,z) with respect to x,y,z"""
+
+    xtf=xyzderiv.idx(allpoints[:,0])
+    ytf=xyzderiv.idy(allpoints[:,1])
+    ztf=xyzderiv.idz(allpoints[:,2])
+
+    iprod=vis(xtf,ytf,ztf)#point(xtf,ytf,ztf).inner(vis)
+    #print(f"{len(iprod.lst)=}")
+    #voltf=sum(abs(blade.magnitude) for blade in iprod.lst)
+    #voltf=sum(abs(blade.magnitude) for blade in iprod.lst)
+    sus=sum(x.magnitude*x.magnitude for x in iprod.lst)
+    delta=np.stack(sus.df,axis=-1)
+    magnitude=sus.f
+    return magnitude,delta
+
 def normalize(vecs):
     """normalize a array of vectors"""
     
@@ -262,15 +278,23 @@ print(Counter(map(len,g.adj_list.values())))
 print([(n,len(x)) for n,x in g.adj_list.items() if len(x)!=2])
 
 
-# voxels=Voxels(1)#
-# voxels.subdivide()
-# startpoints=update=voxels.cubemid()
-# for i in range(8):
-#     old=update
-#     update=newtoniteration(update,vis)#2 newton iters
-#     plt.add_arrows(old, update-old, mag=1)
-# voxels.removecells(np.linalg.norm(update-startpoints,axis=1)<3**.5*voxels.delta)
-# plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,)
+voxels=Voxels(1)#
+voxels.subdivide()
+voxels.subdivide()
+startpoints=update=voxels.cubemid()
+#for i in range(8):
+#    old=update
+#    update=newtoniteration(update,f)#2 newton iters
+#    plt.add_arrows(old, update-old, mag=1,show_scalar_bar=False)
+
+old=startpoints
+magnitudes,derivs=calcderivsus(startpoints,f)
+print(magnitudes.shape,derivs.shape,np.linalg.norm(derivs,axis=-1).shape)
+update=old-(magnitudes/(np.linalg.norm(derivs,axis=-1)**2))[...,None]*derivs
+plt.add_arrows(old, update-old, mag=1,show_scalar_bar=False)
+voxels.filter_cells(np.linalg.norm(update-startpoints,axis=1)<3**.5*voxels.delta*0.25)
+
+plt.add_mesh(voxels.gridify(),opacity=0.5,show_edges=1,)
 
 
 # highlighted_points = points[[n for n,x in g.adj_list.items() if len(x)==3]]
@@ -281,5 +305,13 @@ print([(n,len(x)) for n,x in g.adj_list.items() if len(x)!=2])
 # if len(highlighted_points):
 #     highlighted_point_cloud = pv.PolyData(highlighted_points)
 #     plt.add_mesh(highlighted_point_cloud, color='orange', point_size=5, render_points_as_spheres=True)
-plt.show()
 
+#plt.camera_position = 'yz'
+plt.show(interactive_update =True)
+#plt.camera.azimuth = 45
+from pathlib import Path
+#print(Path(".").absolute())
+plt.open_gif("curveorbit.gif")
+path = plt.generate_orbital_path(n_points=360, shift=2)
+plt.orbit_on_path(path,step=0.05,progress_bar=True,write_frames=True)
+plt.close()

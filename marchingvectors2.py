@@ -227,7 +227,7 @@ for i in range(10):#Gauß-newton steps
 
 
 #print(faces)
-mesh=pv.PolyData(np.array(vertices).ravel(), strips=np.array(faces).ravel())
+mesh=pv.PolyData(np.array(vertices).ravel().reshape(-1,3), strips=np.array(faces).ravel())
 #print(vertices)
 plt.add_mesh(mesh,opacity=1,show_edges=1,)
 plt.show()
