@@ -117,7 +117,7 @@ for i in range(step-1):
                 for vert in triangle:
                     ecke1,ecke2=(punkte[(i+(ecke&1),j+((ecke>>1)&1),k+((ecke>>2)&1))] for ecke in verts[vert])
                     a,b=(vol[(i+(ecke&1),j+((ecke>>1)&1),k+((ecke>>2)&1))] for ecke in verts[vert])
-                    #lin inteerlpol von a,b
+                    #lin inteerlpol von a,b 
                     a=abs(a)
                     b=abs(b)
                     lerpx=a/(a+b)
